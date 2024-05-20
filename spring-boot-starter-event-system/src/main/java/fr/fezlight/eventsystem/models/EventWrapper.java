@@ -47,6 +47,7 @@ public class EventWrapper<T> {
     @Override
     public String toString() {
         return new StringJoiner(", ", EventWrapper.class.getSimpleName() + "[", "]")
+                .add("event=" + event)
                 .add("handlerName='" + handlerName + "'")
                 .add("retryLeft=" + retryLeft)
                 .toString();
@@ -77,7 +78,7 @@ public class EventWrapper<T> {
         }
 
         public EventWrapper<T> build() {
-            return new EventWrapper<T>(this.event, this.handlerName, this.retryLeft);
+            return new EventWrapper<>(this.event, this.handlerName, this.retryLeft);
         }
     }
 }

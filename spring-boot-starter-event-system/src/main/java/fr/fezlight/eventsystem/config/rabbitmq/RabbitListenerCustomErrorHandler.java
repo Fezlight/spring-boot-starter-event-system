@@ -35,7 +35,7 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
     @Override
     public Object handleError(Message amqpMessage, Channel channel, org.springframework.messaging.Message<?> message, ListenerExecutionFailedException exception) {
         if (message == null || !(message.getPayload() instanceof EventWrapper<?> eventWrapper)) {
-            throw new AmqpRejectAndDontRequeueException("Unable to handle message");
+            throw new AmqpRejectAndDontRequeueException("Unable to handle message", exception.getCause());
         }
 
         Integer retryLeftHeader = message.getHeaders().get(AMQP_RETRY_LEFT_HEADER, Integer.class);

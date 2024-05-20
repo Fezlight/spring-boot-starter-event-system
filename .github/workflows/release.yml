@@ -15,6 +15,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
+      - name: Set up Docker
+        run: |
+          sudo apt update
+          sudo apt install -y docker
       - name: Run maven tests
         run: mvn -B verify --file pom.xml
       - name: Upload coverage to Codecov

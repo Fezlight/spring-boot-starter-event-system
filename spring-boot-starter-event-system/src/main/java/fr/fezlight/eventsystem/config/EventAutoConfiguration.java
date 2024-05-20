@@ -38,7 +38,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @ConditionalOnProperty(
         value = "events.enabled",
-        havingValue = "true"
+        havingValue = "true",
+        matchIfMissing = true
 )
 @AutoConfiguration
 @EnableConfigurationProperties(EventProperties.class)

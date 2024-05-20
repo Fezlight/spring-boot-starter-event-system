@@ -24,7 +24,8 @@ import java.util.List;
 
 @ConditionalOnProperty(
         value = "events.enabled",
-        havingValue = "true"
+        havingValue = "true",
+        matchIfMissing = true
 )
 @AutoConfiguration
 public class EventMongoDBAutoConfiguration {

@@ -20,7 +20,7 @@ public class EventRegistryConfig {
     private final MultiValueMap<Class<? extends Event>, String> handlersRegistry = new LinkedMultiValueMap<>();
     private final Map<String, EventHandler<? extends Event>> handlersMap = new HashMap<>();
 
-    public <T extends Event> void registerHandler(String handlerName, Class<T> event, EventHandler<T> eventHandler) {
+    public <T extends Event> String registerHandler(String handlerName, Class<T> event, EventHandler<T> eventHandler) {
         if (handlersMap.containsKey(handlerName)) {
             throw new IllegalArgumentException("Handler with name " + handlerName + " already registered, use 'customName' properties to define an alternative name");
         }
@@ -29,10 +29,29 @@ public class EventRegistryConfig {
 
         log.debug("Registering handler for {} with id '{}'", event.getSimpleName(), handlerName);
         handlersRegistry.add(event, handlerName);
+
+        return handlerName;
     }
 
-    public <T extends Event> void registerHandler(String handlerName, Class<T> event, Consumer<T> eventHandler, int retry) {
-        registerHandler(handlerName, event, new EventHandler<>() {
+    public <T extends Event> String registerHandler(Class<T> event, Consumer<T> eventHandler, int retry) {
+        var subscribeEvent = new SubscribeEvent() {
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return SubscribeEvent.class;
+            }
+
+            @Override
+            public String customName() {
+                return UUID.randomUUID().toString();
+            }
+
+            @Override
+            public int retry() {
+                return retry;
+            }
+        };
+
+        return registerHandler(subscribeEvent.customName(), event, new EventHandler<>() {
             @Override
             public void handle(T event) {
                 eventHandler.accept(event);
@@ -40,28 +59,14 @@ public class EventRegistryConfig {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return new SubscribeEvent() {
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return SubscribeEvent.class;
-                    }
-
-                    @Override
-                    public String customName() {
-                        return UUID.randomUUID().toString();
-                    }
-
-                    @Override
-                    public int retry() {
-                        return retry;
-                    }
-                };
+                return subscribeEvent;
             }
         });
     }
 
     public <T extends Event> void unregisterHandler(Class<T> event, String handlerName) {
         if (!handlersRegistry.containsKey(event)) {
+            log.warn("No handler found for event {} and name '{}'", event, handlerName);
             return;
         }
 

@@ -54,21 +54,23 @@ public class EventListeners {
     public <T extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
                                                EventWrapper<T> event) {
         if (replyTo != null && !Objects.equals(replyTo, defaultMainQueueNaming.get())) {
-            log.debug("No consuming for this message {} related to other queue {}", event, replyTo);
+            log.debug("No consuming for this message '{}' related to other queue {}", event.getEvent().getClass().getName(), replyTo);
             return;
         }
 
-        log.debug("Receiving event {}", event);
+        if (log.isDebugEnabled()) {
+            log.debug("Receiving event {}", event);
+        }
 
         Optional<EventHandler<T>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
 
-        eventHandlers.ifPresent(tEventHandler -> {
+        eventHandlers.ifPresentOrElse(tEventHandler -> {
             log.debug("Handler found => {}", event.getHandlerName());
 
             event.setRetryLeft(tEventHandler.getSubscribeEvent().retry());
 
             tEventHandler.handle(event.getEvent());
-        });
+        }, () -> log.error("No handler found for name '{}'", event.getHandlerName()));
     }
 
     @RabbitHandler(isDefault = true)
