@@ -7,6 +7,7 @@
     <packaging>pom</packaging>
 
     <name>spring-boot-starter-event-system-parent</name>
+    <description>Spring boot event system parent</description>
 
     <modules>
         <module>spring-boot-starter-event-system</module>
