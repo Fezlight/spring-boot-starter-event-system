@@ -7,9 +7,12 @@ import fr.fezlight.eventsystem.converters.ZonedDateTimeConverters;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
@@ -27,7 +30,10 @@ import java.util.List;
         havingValue = "true",
         matchIfMissing = true
 )
+@EnableConfigurationProperties(EventMongodbProperties.class)
 @AutoConfiguration
+@AutoConfigureAfter(EventAutoConfiguration.class)
+@Import(EventSchedulingTaskConfig.class)
 public class EventMongoDBAutoConfiguration {
     @Bean
     @ConditionalOnProperty(value = "events.scheduled-task.enabled", havingValue = "true", matchIfMissing = true)

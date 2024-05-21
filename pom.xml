@@ -129,6 +129,9 @@
                         <include>**/*TestCase.java</include>
                         <include>**/*IT.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/*Properties.java*</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

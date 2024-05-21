@@ -14,6 +14,7 @@ import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static org.springframework.scheduling.annotation.Scheduled.CRON_DISABLED;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @ConditionalOnProperty(
@@ -43,7 +45,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 )
 @AutoConfiguration
 @EnableConfigurationProperties(EventProperties.class)
-@Import({EventQueueConfig.class, EventSchedulingTaskConfig.class})
+@Import(EventQueueConfig.class)
 public class EventAutoConfiguration {
 
     @Bean
@@ -111,7 +113,25 @@ public class EventAutoConfiguration {
         return jacksonMessageConverter;
     }
 
-    @Bean
+    @Bean(name = "retryIncompleteEventsCron")
+    public String retryIncompleteEventsCron(EventProperties eventProperties) {
+        if (eventProperties.getScheduledTask().isEnabled() || eventProperties.getScheduledTask().getIncompleteRetry().isEnabled()) {
+            return eventProperties.getScheduledTask().getIncompleteRetry().getCron();
+        }
+
+        return CRON_DISABLED;
+    }
+
+    @Bean(name = "clearCompletedEventCron")
+    public String clearCompletedEventCron(EventProperties eventProperties) {
+        if (eventProperties.getScheduledTask().isEnabled() || eventProperties.getScheduledTask().getCompleteClear().isEnabled()) {
+            return eventProperties.getScheduledTask().getCompleteClear().getCron();
+        }
+
+        return CRON_DISABLED;
+    }
+
+    @Bean(name = "defaultMainQueueNaming")
     @ConditionalOnMissingBean(name = "defaultMainQueueNaming")
     Supplier<String> defaultMainQueueNaming(@Value("${spring.application.name}") String applicationName,
                                             @Value("${events.rabbit.queue.main.name:}") String alternateMainQueueName) {
@@ -123,7 +143,7 @@ public class EventAutoConfiguration {
 
     @Bean
     EventExternalizationConfiguration eventExternalizationConfiguration(
-            Supplier<String> defaultMainQueueNaming,
+            @Qualifier("defaultMainQueueNaming") Supplier<String> defaultMainQueueNaming,
             @Value("${events.rabbit.queue.main.direct-exchange:events.direct}") String directExchange,
             @Value("${events.rabbit.queue.main.exchange:events}") String exchange
     ) {

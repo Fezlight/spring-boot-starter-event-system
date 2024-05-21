@@ -2,10 +2,13 @@ package fr.fezlight.eventsystem.config;
 
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
 
@@ -15,7 +18,11 @@ import javax.sql.DataSource;
         matchIfMissing = true
 )
 @AutoConfiguration
+@AutoConfigureAfter(EventAutoConfiguration.class)
+@EnableSchedulerLock(defaultLockAtMostFor = "PT1M")
+@Import(EventSchedulingTaskConfig.class)
 public class EventJdbcAutoConfiguration {
+
     @Bean
     @ConditionalOnProperty(value = "events.scheduled-task.enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean
