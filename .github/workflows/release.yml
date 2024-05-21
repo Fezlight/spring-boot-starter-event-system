@@ -53,6 +53,6 @@ jobs:
           SIGN_KEY_ID: ${{ secrets.SIGN_KEY_ID }}
           SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASS }}
         with:
-          maven-args: "--batch-mode -Dmaven.test.skip=true"
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          maven-args: "--batch-mode -Dmaven.test.skip=true"
           release-branch-name: 'main'

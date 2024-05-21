@@ -130,8 +130,9 @@
                         <include>**/*IT.java</include>
                     </includes>
                     <excludes>
-                        <exclude>**/*Properties.java*</exclude>
+                        <exclude>**/*Properties.java</exclude>
                     </excludes>
+                    <forkedProcessExitTimeoutInSeconds>10</forkedProcessExitTimeoutInSeconds>
                 </configuration>
             </plugin>
             <plugin>

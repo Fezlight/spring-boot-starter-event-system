@@ -1,6 +1,6 @@
 # Spring Boot Library implementation of Event System
 
-[![codecov](https://codecov.io/github/Fezlight/spring-boot-starter-event-system-system/graph/badge.svg?token=dF6tkf1ypO)](https://codecov.io/github/Fezlight/spring-boot-starter-event-system-system)
+[![codecov](https://codecov.io/github/Fezlight/spring-boot-starter-event-system/graph/badge.svg?token=dF6tkf1ypO)](https://codecov.io/github/Fezlight/spring-boot-starter-event-system)
 
 ## Main Purpose
 
