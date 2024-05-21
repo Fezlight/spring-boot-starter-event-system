@@ -11,8 +11,12 @@
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
     <version>0.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <url>${parent.url}</url>
 
     <name>spring-boot-starter-event-system-mongodb</name>
+    <description>
+        This module is the MongoDB implementation for event system based on Spring Modulith MongoDB.
+    </description>
 
     <properties>
         <java.version>17</java.version>

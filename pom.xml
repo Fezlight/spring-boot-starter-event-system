@@ -7,7 +7,8 @@
     <packaging>pom</packaging>
 
     <name>spring-boot-starter-event-system-parent</name>
-    <description>Spring boot event system parent</description>
+    <description>This module is the parent module, it won't do anything at all</description>
+    <url>https://github.com/Fezlight/spring-boot-starter-event-system</url>
 
     <modules>
         <module>spring-boot-starter-event-system</module>

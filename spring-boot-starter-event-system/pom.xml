@@ -11,8 +11,13 @@
     <artifactId>spring-boot-starter-event-system</artifactId>
     <version>0.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <url>${parent.url}</url>
 
     <name>spring-boot-starter-event-system</name>
+    <description>
+        This library is dedicated for Spring Boot application and is an implementation of an event system
+        integrated with RabbitMQ and Spring-Modulith-Events.
+    </description>
 
     <dependencies>
         <dependency>
