@@ -200,8 +200,9 @@
                 <version>${maven-release-plugin.version}</version>
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
-                    <scmReleaseCommitComment>&#x1f516; Release @{releaseLabel}</scmReleaseCommitComment>
-                    <scmDevelopmentCommitComment>&#x1f6a7; New Development version</scmDevelopmentCommitComment>
+                    <scmReleaseCommitComment>[skip ci] &#x1f516; Release @{releaseLabel}</scmReleaseCommitComment>
+                    <scmDevelopmentCommitComment>[skip ci] &#x1f6a7; New Development version
+                    </scmDevelopmentCommitComment>
                 </configuration>
             </plugin>
         </plugins>

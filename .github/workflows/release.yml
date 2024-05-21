@@ -4,6 +4,19 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  maven-servers: |
+    [{
+      "id": "sonatype-nexus-snapshots",
+      "username": "${env.MAVEN_REPOSITORY_USERNAME}",
+      "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
+    },
+    {
+      "id": "sonatype-nexus-staging",
+      "username": "${env.MAVEN_REPOSITORY_USERNAME}",
+      "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
+    }]
+
 jobs:
   build:
     runs-on: ubuntu-latest
