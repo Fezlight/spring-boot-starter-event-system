@@ -4,19 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  maven-servers: |
-    [{
-      "id": "sonatype-nexus-snapshots",
-      "username": "${env.MAVEN_REPOSITORY_USERNAME}",
-      "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
-    },
-    {
-      "id": "sonatype-nexus-staging",
-      "username": "${env.MAVEN_REPOSITORY_USERNAME}",
-      "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
-    }]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -69,3 +56,14 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           maven-args: "--batch-mode -Dmaven.test.skip=true"
           release-branch-name: 'main'
+          maven-servers: |
+            [{
+              "id": "sonatype-nexus-snapshots",
+              "username": "${env.MAVEN_REPOSITORY_USERNAME}",
+              "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
+            },
+            {
+              "id": "sonatype-nexus-staging",
+              "username": "${env.MAVEN_REPOSITORY_USERNAME}",
+              "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
+            }]
