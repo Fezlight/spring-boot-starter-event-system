@@ -3,13 +3,13 @@
     <parent>
         <groupId>fr.fezlight</groupId>
         <artifactId>spring-boot-starter-event-system-parent</artifactId>
-        <version>0.0.5-SNAPSHOT</version>
+        <version>0.0.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spring-boot-starter-event-system</artifactId>
-    <version>0.0.5-SNAPSHOT</version>
+    <version>0.0.5</version>
     <packaging>jar</packaging>
     <url>${parent.url}</url>
 
