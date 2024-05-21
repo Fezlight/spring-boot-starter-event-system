@@ -7,7 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 @ContextConfiguration(classes = AppConfiguration.class)
-class EventsSystemJdbcApplicationTests {
+class EventSystemMongodbApplicationTests {
 
     @Test
     void contextLoads() {

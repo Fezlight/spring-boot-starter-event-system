@@ -54,12 +54,6 @@
         </dependency>
 
         <dependency>
-            <groupId>fr.fezlight</groupId>
-            <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
             <scope>test</scope>

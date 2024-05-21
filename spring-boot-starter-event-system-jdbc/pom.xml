@@ -31,6 +31,23 @@
             <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>${shedlock-spring.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>fr.fezlight</groupId>
+            <artifactId>spring-boot-starter-event-system</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
