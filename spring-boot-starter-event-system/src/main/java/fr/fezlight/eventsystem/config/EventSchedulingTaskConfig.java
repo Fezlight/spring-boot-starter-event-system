@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.modulith.events.CompletedEventPublications;
 import org.springframework.modulith.events.IncompleteEventPublications;
+import org.springframework.modulith.events.core.EventPublicationRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -17,14 +17,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class EventSchedulingTaskConfig {
     private static final Logger log = LoggerFactory.getLogger(EventSchedulingTaskConfig.class);
 
-    private final CompletedEventPublications completedEventPublications;
+    private final EventPublicationRegistry eventPublicationRegistry;
     private final IncompleteEventPublications incompleteEventPublications;
     private final EventProperties eventProperties;
 
-    public EventSchedulingTaskConfig(CompletedEventPublications completedEventPublications,
+    public EventSchedulingTaskConfig(EventPublicationRegistry eventPublicationRegistry,
                                      IncompleteEventPublications incompleteEventPublications,
                                      EventProperties eventProperties) {
-        this.completedEventPublications = completedEventPublications;
+        this.eventPublicationRegistry = eventPublicationRegistry;
         this.incompleteEventPublications = incompleteEventPublications;
         this.eventProperties = eventProperties;
     }
@@ -33,7 +33,7 @@ public class EventSchedulingTaskConfig {
     @SchedulerLock(name = "EventPublicationsConfig#clearCompletedEvent")
     public void clearCompletedEvent() {
         log.debug("Delete completed events ...");
-        completedEventPublications.deletePublicationsOlderThan(eventProperties.getScheduledTask().getCompleteClear().getOlderThan());
+        eventPublicationRegistry.deleteCompletedPublicationsOlderThan(eventProperties.getScheduledTask().getCompleteClear().getOlderThan());
     }
 
     @Scheduled(cron = "#{@retryIncompleteEventsCron}")

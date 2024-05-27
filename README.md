@@ -1,14 +1,15 @@
 # Spring Boot Library implementation of Event System
 
 [![codecov](https://codecov.io/github/Fezlight/spring-boot-starter-event-system/graph/badge.svg?token=dF6tkf1ypO)](https://codecov.io/github/Fezlight/spring-boot-starter-event-system)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/fr.fezlight/spring-boot-starter-event-system/badge.svg)](https://maven-badges.herokuapp.com/maven-central/fr.fezlight/spring-boot-starter-event-system)
 
 ## Main Purpose
 
-This library is dedicated for Spring Boot application. Once it is included and enabled via `events.enabled` property it
-will create all resources to handle event listening using RabbitMQ in your application. To avoid losing the message we
-use `spring-modulith-events` and the database backed system.
+This library is dedicated to Spring Boot applications. Once it is included and enabled via `events.enabled` property it
+will create all resources to handle event listening using RabbitMQ in your application. To avoid losing messages we
+use `spring-modulith-events` and a database-backed system.
 
-## Requirement
+## Requirements
 
 - Java 17+
 - Spring Boot 3+
@@ -16,7 +17,7 @@ use `spring-modulith-events` and the database backed system.
 
 ## Getting Started
 
-The library is published on Maven Central. Current version is `0.1.0`
+The library is published on Maven Central. The current version is `0.1.0`
 
 Maven
 
@@ -35,20 +36,19 @@ Gradle
     implementation 'fr.fezlight:spring-boot-starter-event-system:0.1.0'
 ```
 
-See on [Sonatype Maven Central](https://search.maven.org/artifact/fr.fezlight/spring-boot-starter-event-system) for
+See [Sonatype Maven Central](https://search.maven.org/artifact/fr.fezlight/spring-boot-starter-event-system) for
 versions.
 
 The library provides autoconfigured support for creating a basic implementation of an event handling system based on
-property `events.enabled`, by default true.
+the `events.enabled` property, which is true by default.
 
-By design the event system need a database to work, you have 2 starters available for that.
+By design the event system requires a database to work. You have 2 starters available for that.
 
 ### Jdbc
 
 Maven
 
 ```xml
-
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
@@ -62,12 +62,16 @@ Gradle
     implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:0.1.0'
 ```
 
+The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
+publications .
+
+See : https://docs.spring.io/spring-modulith/reference/appendix.html#schemas
+
 ### MongoDB
 
 Maven
 
 ```xml
-
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
@@ -102,15 +106,15 @@ public class SampleEventListener {
 }
 ```
 
-In this example, the annotation `@SubscribeEvent` will implicitly register this method as the handler for any *
+In this example, the `@SubscribeEvent` annotation will implicitly register this method as the handler for any *
 *OrderValidatedEvent**.
 
-> The class must be registered as a valid spring beans to be eligible for subscribing events.
+> The class must be registered as a valid spring beans to be eligible for subscribing to events.
 
 ### Fire an event
 
-To fire an event, first you have to define a class corresponding to your event (e.g OrderValidatedEvent). This class
-must implement **Event** interface.
+To fire an event, first you have to define a class corresponding to your event (e.g. OrderValidatedEvent). This class
+must implement the **Event** interface.
 
 ```java
 public class OrderValidatedEvent implements Event {
@@ -119,7 +123,7 @@ public class OrderValidatedEvent implements Event {
 }
 ```
 
-Once you have defined the event class, you will be able to fire event using the `ApplicationEventPublisher` bean.
+Once you have defined the event class, you will be able to fire events using the `ApplicationEventPublisher` bean.
 
 ```java
 import org.springframework.stereotype.Service;
@@ -127,13 +131,13 @@ import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 public class OrderService {
-    private ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderService(ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactionnal
+    @Transactional
     public void validateOrder(/* Some properties */) {
         // Do validate work ...
 
@@ -145,12 +149,12 @@ public class OrderService {
 ```
 
 By default, `spring-modulith` register a `ApplicationEventPublisher` bean with a TransactionalEventPublisher
-implementation and place event publishing after transaction complete to guarantee good consistency between your
+implementation and places event publishing after the transaction completes to guarantee good consistency between your
 application and event system.
 
 ### Retry an event
 
-By default, an annotated method will not being able to retry an event listening **automatically**.
+By default, an annotated method will not automatically retry an event.
 
 If you want to change this behavior you can use the `retry` parameter within `@SubscribeEvent`.
 
@@ -168,11 +172,35 @@ public class SampleEventListener {
 }
 ```
 
-The time between every retry is configured by `events.rabbit.queue.retry.time-between-retries` property.
+The time between retries is configured by the `events.rabbit.queue.retry.time-between-retries` property.
+
+## Scheduled tasks
+
+This library internally have two scheduled tasks :
+
+- Remove completed tasks configured by `events.scheduled-task.complete-clear`
+- Retry incomplete tasks configured by `events.scheduled-task.incomplete-retry`
+
+These tasks can be enabled by setting `events.scheduled-task.enabled=true`.
+
+### Multi-instance
+
+If your application can be scaled up or if there is a possibility of multiple instances, you can
+activate `events.scheduled-task.lock-enabled=true` to avoid any issues.
+
+This configuration requires a table to work.
+
+See : [ShedLock Documentation](https://github.com/lukas-krecan/ShedLock?tab=readme-ov-file#jdbctemplate)
 
 ## How it works ?
 
-// TODO
+Here's the architecture of the event system.
+
+![](./resources/architecture.drawio.png)
+
+Here is a more detail overview of the workflow of this library.
+
+[Workflow Diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/Fezlight/spring-boot-starter-event-system/resources/workflow.puml)
 
 ## Contributing
 

@@ -18,6 +18,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * Class used to listen on RabbitMQ when an event is published by {@link ApplicationEventPublisher}.
+ * There is two methods listening on the main event queue.
+ *
+ * <li>{@link EventListeners#process(Event)} process Event published by {@link ApplicationEventPublisher} and divide each
+ * handler found into an {@link EventWrapper} and resend to main event queue.</li>
+ * <li>{@link EventListeners#processEvent(String, EventWrapper)} process {@link EventWrapper} published by {@link EventListeners#process(Event)}
+ * and call the associated handler.</li>
+ * <p>
+ *
+ * @author FezLight
+ */
 @RabbitListener(queues = "#{@defaultMainQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
 public class EventListeners {
     private static final Logger log = LoggerFactory.getLogger(EventListeners.class);
@@ -33,15 +45,23 @@ public class EventListeners {
         this.defaultMainQueueNaming = defaultMainQueueNaming;
     }
 
+    /**
+     * Method used to process an event received by {@link ApplicationEventPublisher}.
+     * <li>Search all handlers registered for this event and create {@link EventWrapper} for each one.</li>
+     * <li>Resend all to main event queue.</li>
+     *
+     * @param <E>   Type of Event.
+     * @param event Event received from {@link ApplicationEventPublisher}.
+     */
     @RabbitHandler
     @Transactional
-    public <T extends Event> void process(T event) {
+    public <E extends Event> void process(E event) {
         log.debug("Consuming event {}", event);
 
         List<String> eventHandlers = eventRegistryConfig.getHandlersName(event.getClass());
 
         eventHandlers.forEach(handlerName -> applicationEventPublisher.publishEvent(
-                EventWrapper.<T>builder()
+                EventWrapper.<E>builder()
                         .event(event)
                         .handlerName(handlerName)
                         .build()
@@ -50,9 +70,23 @@ public class EventListeners {
         log.debug("Propagate event to {}", eventHandlers);
     }
 
+    /**
+     * Method used to process an {@link EventWrapper} received by {@link EventListeners#process(Event)}.
+     * <ul>
+     * <li>Call the Event Handler if found by its name {@link EventWrapper#getHandlerName()}</li>
+     * </ul>
+     * <p>
+     * This method will also check if the replyTo headers received from RabbitMQ is matching to the current main
+     * event queue name. If not, the event is ignored.
+     *
+     *
+     * @param <E> Type of Event.
+     * @param replyTo RabbitMQ Header "reply_to".
+     * @param event Event received from {@link ApplicationEventPublisher}.
+     */
     @RabbitHandler
-    public <T extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
-                                               EventWrapper<T> event) {
+    public <E extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
+                                               EventWrapper<E> event) {
         if (replyTo != null && !Objects.equals(replyTo, defaultMainQueueNaming.get())) {
             log.debug("No consuming for this message '{}' related to other queue {}", event.getEvent().getClass().getName(), replyTo);
             return;
@@ -62,7 +96,7 @@ public class EventListeners {
             log.debug("Receiving event {}", event);
         }
 
-        Optional<EventHandler<T>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
+        Optional<EventHandler<E>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
 
         eventHandlers.ifPresentOrElse(tEventHandler -> {
             log.debug("Handler found => {}", event.getHandlerName());
@@ -73,6 +107,11 @@ public class EventListeners {
         }, () -> log.error("No handler found for name '{}'", event.getHandlerName()));
     }
 
+    /**
+     * Method used to ignore Event not compatible with Event System.
+     *
+     * @param event Unknown object.
+     */
     @RabbitHandler(isDefault = true)
     public void errorEvent(Object event) {
         log.debug("Receiving error event {}", event);

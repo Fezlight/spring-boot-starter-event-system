@@ -8,7 +8,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-
+/**
+ * Class used to convert {@link ZonedDateTime} object into MongoDB.
+ *
+ * @author FezLight
+ */
 public class ZonedDateTimeConverters {
     @ReadingConverter
     public static class ZonedDateTimeReadConverter implements Converter<Date, ZonedDateTime> {

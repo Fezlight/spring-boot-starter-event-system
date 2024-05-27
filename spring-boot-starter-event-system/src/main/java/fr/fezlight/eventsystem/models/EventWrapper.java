@@ -3,16 +3,20 @@ package fr.fezlight.eventsystem.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.modulith.events.Externalized;
 
 import java.util.Objects;
 import java.util.StringJoiner;
 
+@Getter
 @Externalized
 public class EventWrapper<T> {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
     private final T event;
     private final String handlerName;
+    @Setter
     private Integer retryLeft;
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
@@ -26,22 +30,6 @@ public class EventWrapper<T> {
 
     public static <T> EventWrapperBuilder<T> builder() {
         return new EventWrapperBuilder<>();
-    }
-
-    public T getEvent() {
-        return this.event;
-    }
-
-    public String getHandlerName() {
-        return this.handlerName;
-    }
-
-    public void setRetryLeft(Integer retryLeft) {
-        this.retryLeft = retryLeft;
-    }
-
-    public Integer getRetryLeft() {
-        return this.retryLeft;
     }
 
     @Override

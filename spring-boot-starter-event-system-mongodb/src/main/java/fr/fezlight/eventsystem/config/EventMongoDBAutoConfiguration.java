@@ -33,10 +33,10 @@ import java.util.List;
 @EnableConfigurationProperties(EventMongodbProperties.class)
 @AutoConfiguration
 @AutoConfigureAfter(EventAutoConfiguration.class)
-@Import(EventSchedulingTaskConfig.class)
+@Import({EventSchedulingTaskConfig.class, EventSchedulerLockConfig.class})
 public class EventMongoDBAutoConfiguration {
     @Bean
-    @ConditionalOnProperty(value = "events.scheduled-task.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(value = "events.scheduled-task.lock-enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public LockProvider lockProvider(MongoClient mongo, EventMongodbProperties eventMongodbProperties) {
         return new MongoLockProvider(mongo.getDatabase(eventMongodbProperties.getDatabaseName()));

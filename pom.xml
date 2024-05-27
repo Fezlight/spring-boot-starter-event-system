@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-parent</artifactId>
-    <version>0.0.6-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>spring-boot-starter-event-system-parent</name>
@@ -17,24 +17,28 @@
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring.boot.version>3.2.5</spring.boot.version>
-        <spring-modulith.version>1.1.4</spring-modulith.version>
+        <spring-modulith.version>1.2.0</spring-modulith.version>
         <shedlock-spring.version>5.12.0</shedlock-spring.version>
+        <lombok.version>1.18.32</lombok.version>
         <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <sign-maven-plugin.version>1.1.0</sign-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     </properties>
 
     <scm>
-        <connection>scm:git:${project.scm.url}</connection>
-        <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>git@github.com:Fezlight/spring-boot-starter-event-system-system.git</url>
+        <connection>scm:git:git@github.com:Fezlight/spring-boot-starter-event-system-system.git</connection>
+        <developerConnection>scm:git:git@github.com:Fezlight/spring-boot-starter-event-system-system.git
+        </developerConnection>
+        <url>https://github.com/Fezlight/spring-boot-starter-event-system</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -59,6 +63,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -120,6 +130,23 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <parameters>true</parameters>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
@@ -130,9 +157,6 @@
                         <include>**/*TestCase.java</include>
                         <include>**/*IT.java</include>
                     </includes>
-                    <excludes>
-                        <exclude>**/*Properties.java</exclude>
-                    </excludes>
                     <forkedProcessExitTimeoutInSeconds>10</forkedProcessExitTimeoutInSeconds>
                 </configuration>
             </plugin>
@@ -143,9 +167,8 @@
                 <executions>
                     <execution>
                         <id>attach-source</id>
-                        <phase>compile</phase>
                         <goals>
-                            <goal>jar-no-fork</goal>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>

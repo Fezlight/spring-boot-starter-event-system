@@ -4,7 +4,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 
-
+/**
+ * Class used to convert {@link Class} object into MongoDB.
+ *
+ * @author FezLight
+ */
 public class ClassConverters {
     @ReadingConverter
     public static class ClassReadConverter implements Converter<String, Class<?>> {
