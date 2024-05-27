@@ -5,8 +5,8 @@ import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 /**
  * Interface used to implement an event handler.
  *
- * <li>{@link EventHandler#handle(Event)} method will receive the event.</li>
- * <li>{@link EventHandler#getSubscribeEvent()} method needed to retrieve event handler parameters by annotation</li>
+ * <p>- {@link EventHandler#handle(Event)} method will receive the event.
+ * <p>- {@link EventHandler#getSubscribeEvent()} method needed to retrieve event handler parameters by annotation
  *
  * @author FezLight
  */

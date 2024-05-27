@@ -22,11 +22,10 @@ import java.util.function.Supplier;
  * Class used to listen on RabbitMQ when an event is published by {@link ApplicationEventPublisher}.
  * There is two methods listening on the main event queue.
  *
- * <li>{@link EventListeners#process(Event)} process Event published by {@link ApplicationEventPublisher} and divide each
- * handler found into an {@link EventWrapper} and resend to main event queue.</li>
- * <li>{@link EventListeners#processEvent(String, EventWrapper)} process {@link EventWrapper} published by {@link EventListeners#process(Event)}
- * and call the associated handler.</li>
- * <p>
+ * <p>- {@link EventListeners#process(Event)} process Event published by {@link ApplicationEventPublisher} and divide each
+ * handler found into an {@link EventWrapper} and resend to main event queue.
+ * <p>- {@link EventListeners#processEvent(String, EventWrapper)} process {@link EventWrapper} published by {@link EventListeners#process(Event)}
+ * and call the associated handler.
  *
  * @author FezLight
  */
@@ -47,8 +46,8 @@ public class EventListeners {
 
     /**
      * Method used to process an event received by {@link ApplicationEventPublisher}.
-     * <li>Search all handlers registered for this event and create {@link EventWrapper} for each one.</li>
-     * <li>Resend all to main event queue.</li>
+     * <p>- Search all handlers registered for this event and create {@link EventWrapper} for each one.
+     * <p>- Resend all to main event queue.
      *
      * @param <E>   Type of Event.
      * @param event Event received from {@link ApplicationEventPublisher}.
@@ -72,11 +71,9 @@ public class EventListeners {
 
     /**
      * Method used to process an {@link EventWrapper} received by {@link EventListeners#process(Event)}.
-     * <ul>
-     * <li>Call the Event Handler if found by its name {@link EventWrapper#getHandlerName()}</li>
-     * </ul>
-     * <p>
-     * This method will also check if the replyTo headers received from RabbitMQ is matching to the current main
+     *
+     * <p>Call the Event Handler if found by its name {@link EventWrapper#getHandlerName()}
+     * <p>This method will also check if the replyTo headers received from RabbitMQ is matching to the current main
      * event queue name. If not, the event is ignored.
      *
      *

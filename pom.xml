@@ -17,6 +17,7 @@
     </modules>
 
     <properties>
+        <additionalparam>-Xdoclint:none</additionalparam>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -24,7 +25,6 @@
         <spring.boot.version>3.2.5</spring.boot.version>
         <spring-modulith.version>1.2.0</spring-modulith.version>
         <shedlock-spring.version>5.12.0</shedlock-spring.version>
-        <lombok.version>1.18.32</lombok.version>
         <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <sign-maven-plugin.version>1.1.0</sign-maven-plugin.version>
@@ -63,12 +63,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -134,13 +128,6 @@
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <parameters>true</parameters>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
@@ -185,6 +172,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <quiet>true</quiet>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.simplify4u.plugins</groupId>

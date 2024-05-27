@@ -10,7 +10,7 @@ env:
   SIGN_KEY: ${{ secrets.SIGN_KEY }}
   SIGN_KEY_ID: ${{ secrets.SIGN_KEY_ID }}
   SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASS }}
-  maven-servers: |
+  MAVEN_SERVERS: |
     [{
       "id": "sonatype-nexus-snapshots",
       "username": "${env.MAVEN_REPOSITORY_USERNAME}",
