@@ -200,7 +200,7 @@ Here's the architecture of the event system.
 
 Here is a more detail overview of the workflow of this library.
 
-[Workflow Diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/Fezlight/spring-boot-starter-event-system/resources/workflow.puml)
+[Workflow Diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/Fezlight/spring-boot-starter-event-system/main/resources/workflow.puml)
 
 ## Contributing
 
