@@ -53,7 +53,7 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
                             .build()
             );
         } else {
-            throw new AmqpRejectAndDontRequeueException("Rejecting message no retries left");
+            throw new AmqpRejectAndDontRequeueException("Rejecting message no retries left", exception.getCause());
         }
 
         return null;

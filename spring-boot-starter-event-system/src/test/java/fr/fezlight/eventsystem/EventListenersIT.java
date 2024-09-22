@@ -16,6 +16,7 @@ import org.springframework.modulith.test.Scenario;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,9 +35,11 @@ public class EventListenersIT {
     private AmqpAdmin amqpAdmin;
 
     @Test
-    void givenRegisteredHandler_whenPublishEvent_ThenSingleEvent(Scenario scenario) {
+    void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenSingleEvent(Scenario scenario) {
+        AtomicBoolean bool = new AtomicBoolean(false);
         var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-        }, 0);
+            bool.set(true);
+        }, 0, "#event.name.equals(\"testName\")");
 
         var event = new TestEventListener("testName");
         var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
@@ -49,6 +52,31 @@ public class EventListenersIT {
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
+        assertThat(bool.get()).isEqualTo(true);
+
+        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
+    }
+
+    @Test
+    void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenNoHandlerFound(Scenario scenario) {
+        AtomicBoolean bool = new AtomicBoolean(false);
+        var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
+            bool.set(true);
+        }, 0, "#event.name.equals(\"other\")");
+
+        var event = new TestEventListener("testName");
+        var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
+
+        scenario.stimulate(() -> eventListeners.process(event))
+                .andWaitForEventOfType(EventWrapper.class)
+                .toArriveAndVerify(e -> {
+                    assertThat(e).isNotNull();
+                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0));
+                    assertThat(e.getEvent()).isEqualTo(event);
+                });
+
+        assertThat(bool.get()).isEqualTo(false);
+
         eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
     }
 
@@ -56,13 +84,13 @@ public class EventListenersIT {
     void given4RegisteredHandler_whenPublishEvent_ThenMultipleEvent(PublishedEvents events) {
         var listEvents = List.of(
                 eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-                }, 0),
+                }, 0, ""),
                 eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-                }, 0),
+                }, 0, ""),
                 eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-                }, 0),
+                }, 0, ""),
                 eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-                }, 0)
+                }, 0, "")
         );
 
         var event = new TestEventListener("testName");
@@ -81,7 +109,7 @@ public class EventListenersIT {
     void givenRegisteredHandlerWithException_whenPublishEvent_ThenSendToError(Scenario scenario) {
         var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
             throw new IllegalArgumentException();
-        }, 0);
+        }, 0, "");
 
         var event = new TestEventListener("testName");
         var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
@@ -104,7 +132,7 @@ public class EventListenersIT {
     void givenRegisteredHandlerWithExceptionAndCanRetry_whenPublishEvent_ThenSendToRetry(Scenario scenario) {
         var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
             throw new IllegalArgumentException();
-        }, 1);
+        }, 1, "");
 
         var event = new TestEventListener("testName");
         var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);

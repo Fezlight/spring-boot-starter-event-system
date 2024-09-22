@@ -60,10 +60,11 @@ public class EventRegistryConfig {
      * @param event        Event related class
      * @param eventHandler Specify what should be done with the event by consumer
      * @param retry        Number of retries permitted
+     * @param condition    Condition to handle event (Spring Expression Language (SpEL) expression)
      * @param <E>          Event related class type
      * @return the handler name
      */
-    public <E extends Event> String registerHandler(Class<E> event, Consumer<E> eventHandler, int retry) {
+    public <E extends Event> String registerHandler(Class<E> event, Consumer<E> eventHandler, int retry, String condition) {
         var subscribeEvent = new SubscribeEvent() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -78,6 +79,11 @@ public class EventRegistryConfig {
             @Override
             public int retry() {
                 return retry;
+            }
+
+            @Override
+            public String condition() {
+                return condition;
             }
         };
 

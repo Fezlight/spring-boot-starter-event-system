@@ -17,7 +17,7 @@ use `spring-modulith-events` and a database-backed system.
 
 ## Getting Started
 
-The library is published on Maven Central. The current version is `0.1.0`
+The library is published on Maven Central. The current version is `0.2.0`
 
 Maven
 
@@ -26,14 +26,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system:0.1.0'
+    implementation 'fr.fezlight:spring-boot-starter-event-system:0.2.0'
 ```
 
 See [Sonatype Maven Central](https://search.maven.org/artifact/fr.fezlight/spring-boot-starter-event-system) for
@@ -52,14 +52,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:0.1.0'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:0.2.0'
 ```
 
 The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
@@ -75,14 +75,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:0.1.0'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:0.2.0'
 ```
 
 ## Usage
@@ -172,7 +172,34 @@ public class SampleEventListener {
 }
 ```
 
-The time between retries is configured by the `events.rabbit.queue.retry.time-between-retries` property.
+### Conditional handling
+
+By default, all method subscribing to an event type will consume event.
+
+If you want to change this behavior you can use the `condition` parameter within `@SubscribeEvent`.
+The syntax is a spring SpEL expression.
+
+```java
+import org.springframework.stereotype.Component;
+
+@Component
+public class SampleEventListener {
+
+    @SubscribeEvent(condition = "#event.id == '15'")
+    public void handleOrderValidated(OrderValidatedEvent event) {
+        // Do some work with event ...
+    }
+
+}
+```
+
+Here the condition will consume event only when **OrderValidatedEvent.id** field equals to 15.
+
+Keep attention at **#event**, it is declared by default with the first method parameter value (here *
+*OrderValidatedEvent**) but name will always be **event**. There is no correlation between parameter name and condition
+**#event**.
+
+You can also use **#root** to filter value from **EventWrapper** object.
 
 ## Scheduled tasks
 

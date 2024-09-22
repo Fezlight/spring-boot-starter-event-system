@@ -148,7 +148,7 @@ public class EventProperties {
     }
 
     public static class ScheduledTask {
-        private boolean enabled = true;
+        private boolean enabled = false;
         private boolean lockEnabled = false;
         private Time incompleteRetry = new Time();
         private Time completeClear = new Time();
@@ -186,7 +186,7 @@ public class EventProperties {
         }
 
         public static class Time {
-            private boolean enabled = true;
+            private boolean enabled = false;
             private String cron = "0 */1 * * * *";
             private Duration olderThan = Duration.ofMinutes(1);
 
