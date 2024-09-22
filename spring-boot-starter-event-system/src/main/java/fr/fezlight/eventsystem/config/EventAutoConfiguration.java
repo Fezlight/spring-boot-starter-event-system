@@ -115,7 +115,7 @@ public class EventAutoConfiguration {
 
     @Bean(name = "retryIncompleteEventsCron")
     public String retryIncompleteEventsCron(EventProperties eventProperties) {
-        if (eventProperties.getScheduledTask().isEnabled() || eventProperties.getScheduledTask().getIncompleteRetry().isEnabled()) {
+        if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getIncompleteRetry().isEnabled()) {
             return eventProperties.getScheduledTask().getIncompleteRetry().getCron();
         }
 
@@ -124,7 +124,7 @@ public class EventAutoConfiguration {
 
     @Bean(name = "clearCompletedEventCron")
     public String clearCompletedEventCron(EventProperties eventProperties) {
-        if (eventProperties.getScheduledTask().isEnabled() || eventProperties.getScheduledTask().getCompleteClear().isEnabled()) {
+        if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getCompleteClear().isEnabled()) {
             return eventProperties.getScheduledTask().getCompleteClear().getCron();
         }
 

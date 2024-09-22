@@ -1,6 +1,7 @@
 package fr.fezlight.eventsystem.annotation;
 
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
+import fr.fezlight.eventsystem.models.EventWrapper;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -31,4 +32,19 @@ public @interface SubscribeEvent {
      * @return the number of retry, if any (or 0 by default)
      */
     int retry() default 0;
+
+    /**
+     * Spring Expression Language (SpEL) expression used for making the event
+     * handling conditional.
+     * <p>
+     * This condition is used when consuming event to route it to the right destination
+     * <p>
+     * Use #event.[anyField] to find a value from your event object and #root.[anyField] to
+     * retrieve a value from wrapper object <b>EventWrapper</b>
+     *
+     * @return Spring SpEL expression to condition consuming event
+     * @see EventWrapper Event wrapper object
+     */
+    /* language=SpEL */
+    String condition() default "";
 }

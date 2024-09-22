@@ -113,7 +113,7 @@ public class EventRegistryConfigTest {
     @Test
     void givenEventHandlerConsumer_whenRegisterHandler_thenHandlerRegistered() {
         eventRegistryConfig.registerHandler(TestEventRegistry.class, e -> {
-        }, 5);
+        }, 5, "");
 
         var handlers = eventRegistryConfig.getHandlersName(TestEventRegistry.class);
 

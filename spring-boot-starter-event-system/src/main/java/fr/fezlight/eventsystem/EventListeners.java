@@ -10,6 +10,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.SpelParserConfiguration;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static org.springframework.util.StringUtils.hasLength;
 
 /**
  * Class used to listen on RabbitMQ when an event is published by {@link ApplicationEventPublisher}.
@@ -36,12 +42,16 @@ public class EventListeners {
     private final EventRegistryConfig eventRegistryConfig;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final Supplier<String> defaultMainQueueNaming;
+    private final SpelParserConfiguration spelParserConfiguration;
+    private final ExpressionParser expressionParser;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
                           Supplier<String> defaultMainQueueNaming) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
+        this.spelParserConfiguration = new SpelParserConfiguration(true, true);
+        this.expressionParser = new SpelExpressionParser(spelParserConfiguration);
     }
 
     /**
@@ -63,6 +73,7 @@ public class EventListeners {
                 EventWrapper.<E>builder()
                         .event(event)
                         .handlerName(handlerName)
+                        .retryLeft(0)
                         .build()
         ));
 
@@ -76,10 +87,9 @@ public class EventListeners {
      * <p>This method will also check if the replyTo headers received from RabbitMQ is matching to the current main
      * event queue name. If not, the event is ignored.
      *
-     *
-     * @param <E> Type of Event.
+     * @param <E>     Type of Event.
      * @param replyTo RabbitMQ Header "reply_to".
-     * @param event Event received from {@link ApplicationEventPublisher}.
+     * @param event   Event received from {@link ApplicationEventPublisher}.
      */
     @RabbitHandler
     public <E extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
@@ -95,12 +105,22 @@ public class EventListeners {
 
         Optional<EventHandler<E>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
 
-        eventHandlers.ifPresentOrElse(tEventHandler -> {
+        eventHandlers.filter(eventHandler -> {
+            var expression = eventHandler.getSubscribeEvent().condition();
+            if (!hasLength(expression)) {
+                return true;
+            }
+
+            var context = new StandardEvaluationContext(event);
+            context.setVariable("event", event.getEvent());
+            return Boolean.TRUE.equals(expressionParser.parseExpression(eventHandler.getSubscribeEvent().condition())
+                    .getValue(context, Boolean.class));
+        }).ifPresentOrElse(eventHandler -> {
             log.debug("Handler found => {}", event.getHandlerName());
 
-            event.setRetryLeft(tEventHandler.getSubscribeEvent().retry());
+            event.setRetryLeft(eventHandler.getSubscribeEvent().retry());
 
-            tEventHandler.handle(event.getEvent());
+            eventHandler.handle(event.getEvent());
         }, () -> log.error("No handler found for name '{}'", event.getHandlerName()));
     }
 

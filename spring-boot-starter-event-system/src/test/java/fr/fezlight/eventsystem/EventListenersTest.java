@@ -82,6 +82,11 @@ class EventListenersTest {
             public Class<? extends Annotation> annotationType() {
                 return SubscribeEvent.class;
             }
+
+            @Override
+            public String condition() {
+                return "";
+            }
         });
         when(eventRegistryConfig.<TestEventListeners>getByHandlerName("test"))
                 .thenReturn(Optional.of(eventHandler));
