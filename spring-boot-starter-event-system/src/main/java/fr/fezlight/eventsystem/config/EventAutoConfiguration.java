@@ -61,15 +61,12 @@ public class EventAutoConfiguration {
                     .toList();
 
             for (Method method : methods) {
-                SubscribeEvent annotation = method.getAnnotation(SubscribeEvent.class);
-                var customName = annotation.customName();
-
                 if (method.getParameterCount() != 1) {
                     throw new IllegalArgumentException("Method annotated with @SubscribeEvent must have exactly one parameter");
                 }
 
                 registry.registerHandler(
-                        !isEmpty(customName) ? customName : String.format("%s#%s", o.getSimpleName(), method.getName()),
+                        String.format("%s#%s", o.getSimpleName(), method.getName()),
                         (Class<Event>) method.getParameterTypes()[0],
                         new EventHandler<>() {
                             @Override
@@ -83,7 +80,7 @@ public class EventAutoConfiguration {
 
                             @Override
                             public SubscribeEvent getSubscribeEvent() {
-                                return annotation;
+                                return method.getAnnotation(SubscribeEvent.class);
                             }
                         }
                 );

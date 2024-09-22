@@ -4,6 +4,7 @@ import fr.fezlight.eventsystem.config.AppConfiguration;
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventWrapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -34,50 +35,47 @@ public class EventListenersIT {
     @Autowired
     private AmqpAdmin amqpAdmin;
 
+    @BeforeEach
+    void setUp() {
+        eventRegistryConfig.clear();
+    }
+
     @Test
     void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenSingleEvent(Scenario scenario) {
         AtomicBoolean bool = new AtomicBoolean(false);
-        var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
+        var handler = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
             bool.set(true);
         }, 0, "#event.name.equals(\"testName\")");
 
         var event = new TestEventListener("testName");
-        var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
 
         scenario.stimulate(() -> eventListeners.process(event))
                 .andWaitForEventOfType(EventWrapper.class)
                 .toArriveAndVerify(e -> {
                     assertThat(e).isNotNull();
-                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0));
+                    assertThat(e.getHandlerName()).isEqualTo(handler.name());
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
         assertThat(bool.get()).isEqualTo(true);
 
-        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
+        eventRegistryConfig.unregisterHandler(TestEventListener.class, handler.name());
     }
 
     @Test
     void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenNoHandlerFound(Scenario scenario) {
         AtomicBoolean bool = new AtomicBoolean(false);
-        var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
+        var handler = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
             bool.set(true);
         }, 0, "#event.name.equals(\"other\")");
 
         var event = new TestEventListener("testName");
-        var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
 
-        scenario.stimulate(() -> eventListeners.process(event))
-                .andWaitForEventOfType(EventWrapper.class)
-                .toArriveAndVerify(e -> {
-                    assertThat(e).isNotNull();
-                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0));
-                    assertThat(e.getEvent()).isEqualTo(event);
-                });
+        scenario.stimulate(() -> eventListeners.process(event));
 
         assertThat(bool.get()).isEqualTo(false);
 
-        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
+        eventRegistryConfig.unregisterHandler(TestEventListener.class, handler.name());
     }
 
     @Test
@@ -102,30 +100,29 @@ public class EventListenersIT {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(4);
 
-        listEvents.forEach(e -> eventRegistryConfig.unregisterHandler(TestEventListener.class, e));
+        listEvents.forEach(e -> eventRegistryConfig.unregisterHandler(TestEventListener.class, e.name()));
     }
 
     @Test
     void givenRegisteredHandlerWithException_whenPublishEvent_ThenSendToError(Scenario scenario) {
-        var ev = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
+        var handler = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
             throw new IllegalArgumentException();
         }, 0, "");
 
         var event = new TestEventListener("testName");
-        var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
 
         scenario.stimulate(() -> eventListeners.process(event))
                 .andWaitForEventOfType(EventWrapper.class)
                 .toArriveAndVerify(e -> {
                     assertThat(e).isNotNull();
-                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0));
+                    assertThat(e.getHandlerName()).isEqualTo(handler.name());
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
         Integer countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
         assertThat(countError).isEqualTo(1);
 
-        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
+        eventRegistryConfig.unregisterHandler(TestEventListener.class, handler.name());
     }
 
     @Test
@@ -135,13 +132,13 @@ public class EventListenersIT {
         }, 1, "");
 
         var event = new TestEventListener("testName");
-        var eventHandlers = eventRegistryConfig.getHandlersName(TestEventListener.class);
+        var eventHandlers = eventRegistryConfig.getHandlers(TestEventListener.class);
 
         scenario.stimulate(() -> eventListeners.process(event))
                 .andWaitForEventOfType(EventWrapper.class)
                 .toArriveAndVerify(e -> {
                     assertThat(e).isNotNull();
-                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0));
+                    assertThat(e.getHandlerName()).isEqualTo(eventHandlers.get(0).name());
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
@@ -150,7 +147,7 @@ public class EventListenersIT {
         Integer countRetry = amqpAdmin.getQueueInfo("events.retry").getMessageCount();
         assertThat(countRetry).isEqualTo(1);
 
-        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev);
+        eventRegistryConfig.unregisterHandler(TestEventListener.class, ev.name());
     }
 
     public record TestEventListener(String name) implements Event {

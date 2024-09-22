@@ -2,14 +2,15 @@ package fr.fezlight.eventsystem;
 
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
 import fr.fezlight.eventsystem.models.Event;
-import fr.fezlight.eventsystem.models.EventHandler;
 import fr.fezlight.eventsystem.models.EventWrapper;
+import fr.fezlight.eventsystem.models.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.springframework.util.StringUtils.hasLength;
@@ -42,16 +44,20 @@ public class EventListeners {
     private final EventRegistryConfig eventRegistryConfig;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final Supplier<String> defaultMainQueueNaming;
-    private final SpelParserConfiguration spelParserConfiguration;
     private final ExpressionParser expressionParser;
+    private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
                           Supplier<String> defaultMainQueueNaming) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
-        this.spelParserConfiguration = new SpelParserConfiguration(true, true);
-        this.expressionParser = new SpelExpressionParser(spelParserConfiguration);
+        this.expressionParser = new SpelExpressionParser(
+                new SpelParserConfiguration(true, true)
+        );
+        this.conditionEvaluation = (expression, context) -> {
+            return Boolean.TRUE.equals(expressionParser.parseExpression(expression).getValue(context, Boolean.class));
+        };
     }
 
     /**
@@ -67,12 +73,27 @@ public class EventListeners {
     public <E extends Event> void process(E event) {
         log.debug("Consuming event {}", event);
 
-        List<String> eventHandlers = eventRegistryConfig.getHandlersName(event.getClass());
+        List<Handler<?>> eventHandlers = eventRegistryConfig.getHandlers(event.getClass());
 
-        eventHandlers.forEach(handlerName -> applicationEventPublisher.publishEvent(
+        var context = new StandardEvaluationContext();
+        context.setVariable("event", event);
+
+        eventHandlers.stream().filter(handler -> {
+            var expression = handler.condition();
+            if (!hasLength(expression)) {
+                return true;
+            }
+
+            var isValid = conditionEvaluation.apply(expression, context);
+            if (!isValid && log.isDebugEnabled()) {
+                log.debug("Filter out handler '{}' because condition not matched", handler.name());
+            }
+
+            return isValid;
+        }).forEach(handler -> applicationEventPublisher.publishEvent(
                 EventWrapper.<E>builder()
                         .event(event)
-                        .handlerName(handlerName)
+                        .handlerName(handler.name())
                         .retryLeft(0)
                         .build()
         ));
@@ -103,24 +124,14 @@ public class EventListeners {
             log.debug("Receiving event {}", event);
         }
 
-        Optional<EventHandler<E>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
+        Optional<Handler<E>> eventHandlers = eventRegistryConfig.getByHandlerName(event.getHandlerName());
 
-        eventHandlers.filter(eventHandler -> {
-            var expression = eventHandler.getSubscribeEvent().condition();
-            if (!hasLength(expression)) {
-                return true;
-            }
-
-            var context = new StandardEvaluationContext(event);
-            context.setVariable("event", event.getEvent());
-            return Boolean.TRUE.equals(expressionParser.parseExpression(eventHandler.getSubscribeEvent().condition())
-                    .getValue(context, Boolean.class));
-        }).ifPresentOrElse(eventHandler -> {
+        eventHandlers.ifPresentOrElse(handler -> {
             log.debug("Handler found => {}", event.getHandlerName());
 
-            event.setRetryLeft(eventHandler.getSubscribeEvent().retry());
+            event.setRetryLeft(handler.retry());
 
-            eventHandler.handle(event.getEvent());
+            handler.handle(event.getEvent());
         }, () -> log.error("No handler found for name '{}'", event.getHandlerName()));
     }
 

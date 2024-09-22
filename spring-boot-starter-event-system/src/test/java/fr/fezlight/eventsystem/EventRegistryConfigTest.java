@@ -4,10 +4,13 @@ import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
+import fr.fezlight.eventsystem.models.Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.annotation.Annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,8 +21,31 @@ public class EventRegistryConfigTest {
     @InjectMocks
     private EventRegistryConfig eventRegistryConfig;
 
+    private SubscribeEvent subscribeEvent = new SubscribeEvent() {
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return SubscribeEvent.class;
+        }
+
+        @Override
+        public String customName() {
+            return "";
+        }
+
+        @Override
+        public int retry() {
+            return 0;
+        }
+
+        @Override
+        public String condition() {
+            return "";
+        }
+    };
+
     @Test
-    void givenHandlersRegistered_whenGetHandlersName_thenReturnHandler() {
+    void givenHandlersRegistered_whenGetHandlers_thenReturnHandler() {
         eventRegistryConfig.registerHandler("test", TestEventRegistry.class, new EventHandler<>() {
             @Override
             public void handle(TestEventRegistry event) {
@@ -28,7 +54,7 @@ public class EventRegistryConfigTest {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return null;
+                return subscribeEvent;
             }
         });
 
@@ -38,7 +64,7 @@ public class EventRegistryConfigTest {
     }
 
     @Test
-    void given2HandlersRegistered_whenGetHandlersName_thenReturnHandlersName() {
+    void given2HandlersRegistered_whenGetHandlersName_thenReturnHandlers() {
         var eventHandler = new EventHandler<TestEventRegistry>() {
             @Override
             public void handle(TestEventRegistry event) {
@@ -47,19 +73,21 @@ public class EventRegistryConfigTest {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return null;
+                return subscribeEvent;
             }
         };
         eventRegistryConfig.registerHandler("test", TestEventRegistry.class, eventHandler);
         eventRegistryConfig.registerHandler("test2", TestEventRegistry.class, eventHandler);
 
-        var result = eventRegistryConfig.getHandlersName(TestEventRegistry.class);
+        var result = eventRegistryConfig.getHandlers(TestEventRegistry.class)
+                .stream()
+                .map(Handler::name);
 
         assertThat(result).contains("test", "test2");
     }
 
     @Test
-    void givenNoHandlers_whenGetHandlersName_thenReturnEmpty() {
+    void givenNoHandlers_whenGetHandlers_thenReturnEmpty() {
         var result = eventRegistryConfig.getByHandlerName("test");
 
         assertThat(result).isEmpty();
@@ -75,12 +103,12 @@ public class EventRegistryConfigTest {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return null;
+                return subscribeEvent;
             }
         });
 
         assertThat(eventRegistryConfig.getByHandlerName("test")).isPresent();
-        assertThat(eventRegistryConfig.getHandlersName(TestEventRegistry.class))
+        assertThat(eventRegistryConfig.getHandlers(TestEventRegistry.class).stream().map(Handler::name))
                 .hasSize(1)
                 .contains("test");
     }
@@ -95,7 +123,7 @@ public class EventRegistryConfigTest {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return null;
+                return subscribeEvent;
             }
         };
         var handlerName = "test";
@@ -115,14 +143,14 @@ public class EventRegistryConfigTest {
         eventRegistryConfig.registerHandler(TestEventRegistry.class, e -> {
         }, 5, "");
 
-        var handlers = eventRegistryConfig.getHandlersName(TestEventRegistry.class);
+        var handlers = eventRegistryConfig.getHandlers(TestEventRegistry.class);
 
         assertThat(handlers).hasSize(1);
 
-        var handler = eventRegistryConfig.getByHandlerName(handlers.get(0));
+        var handler = eventRegistryConfig.getByHandlerName(handlers.get(0).name());
         assertThat(handler).isPresent();
-        assertThat(handler.get().getSubscribeEvent().retry()).isEqualTo(5);
-        assertThat(handler.get().getSubscribeEvent().customName()).isNotNull();
+        assertThat(handler.get().retry()).isEqualTo(5);
+        assertThat(handler.get().name()).isNotNull();
     }
 
     @Test
@@ -135,14 +163,14 @@ public class EventRegistryConfigTest {
 
             @Override
             public SubscribeEvent getSubscribeEvent() {
-                return null;
+                return subscribeEvent;
             }
         });
 
         eventRegistryConfig.unregisterHandler(TestEventRegistry.class, "test");
 
         assertThat(eventRegistryConfig.getByHandlerName("test")).isEmpty();
-        assertThat(eventRegistryConfig.getHandlersName(TestEventRegistry.class)).isEmpty();
+        assertThat(eventRegistryConfig.getHandlers(TestEventRegistry.class)).isEmpty();
     }
 
     @Test
@@ -150,7 +178,7 @@ public class EventRegistryConfigTest {
         eventRegistryConfig.unregisterHandler(TestEventRegistry.class, "test");
 
         assertThat(eventRegistryConfig.getByHandlerName("test")).isEmpty();
-        assertThat(eventRegistryConfig.getHandlersName(TestEventRegistry.class)).isEmpty();
+        assertThat(eventRegistryConfig.getHandlers(TestEventRegistry.class)).isEmpty();
     }
 
     public record TestEventRegistry(String eventName) implements Event {

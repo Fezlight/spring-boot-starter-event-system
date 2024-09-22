@@ -3,6 +3,7 @@ package fr.fezlight.eventsystem.config;
 import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
+import fr.fezlight.eventsystem.models.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -11,7 +12,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -25,8 +28,7 @@ import java.util.function.Consumer;
 public class EventRegistryConfig {
     private static final Logger log = LoggerFactory.getLogger(EventRegistryConfig.class);
 
-    private final MultiValueMap<Class<? extends Event>, String> handlersRegistry = new LinkedMultiValueMap<>();
-    private final Map<String, EventHandler<? extends Event>> handlersMap = new HashMap<>();
+    private final MultiValueMap<Class<? extends Event>, Handler<?>> handlersRegistry = new LinkedMultiValueMap<>();
 
     /**
      * Method used to register a new handler to the registry by specifying its name and event class.
@@ -35,19 +37,20 @@ public class EventRegistryConfig {
      * @param event        Event related class
      * @param eventHandler A class implementation of EventHandler or lambda
      * @param <E>          Event related class type
-     * @return the handler name
+     * @return the handler instance
      */
-    public <E extends Event> String registerHandler(String handlerName, Class<E> event, EventHandler<E> eventHandler) {
-        if (handlersMap.containsKey(handlerName)) {
+    public <E extends Event> Handler<?> registerHandler(String handlerName, Class<E> event, EventHandler<E> eventHandler) {
+        var handler = new Handler<>(handlerName, eventHandler);
+
+        if (getByHandlerName(handler.name()).isPresent()) {
             throw new IllegalArgumentException("Handler with name " + handlerName + " already registered, use 'customName' properties to define an alternative name");
         }
 
-        handlersMap.put(handlerName, eventHandler);
-
         log.debug("Registering handler for {} with id '{}'", event.getSimpleName(), handlerName);
-        handlersRegistry.add(event, handlerName);
 
-        return handlerName;
+        handlersRegistry.add(event, handler);
+
+        return handler;
     }
 
     /**
@@ -62,9 +65,10 @@ public class EventRegistryConfig {
      * @param retry        Number of retries permitted
      * @param condition    Condition to handle event (Spring Expression Language (SpEL) expression)
      * @param <E>          Event related class type
-     * @return the handler name
+     * @return the handler instance
      */
-    public <E extends Event> String registerHandler(Class<E> event, Consumer<E> eventHandler, int retry, String condition) {
+    public <E extends Event> Handler<?> registerHandler(Class<E> event, Consumer<E> eventHandler, int retry, String condition) {
+        var id = UUID.randomUUID().toString();
         var subscribeEvent = new SubscribeEvent() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -73,7 +77,7 @@ public class EventRegistryConfig {
 
             @Override
             public String customName() {
-                return UUID.randomUUID().toString();
+                return id;
             }
 
             @Override
@@ -113,13 +117,18 @@ public class EventRegistryConfig {
             return;
         }
 
-        handlersMap.remove(handlerName);
-
         log.debug("Unregistering handler for {} with id '{}'", event.getSimpleName(), handlerName);
-        handlersRegistry.get(event).remove(handlerName);
+        handlersRegistry.get(event).removeIf(handler -> handler.name().equals(handlerName));
     }
 
-    public <E extends Event> List<String> getHandlersName(Class<E> event) {
+    /**
+     * Method used to retrieve all handler related to an event type
+     *
+     * @param event Event related class
+     * @param <E>   Event related class type
+     * @return list of handler related to event type, empty list if not found
+     */
+    public <E extends Event> List<Handler<?>> getHandlers(Class<E> event) {
         if (!handlersRegistry.containsKey(event)) {
             return List.of();
         }
@@ -127,9 +136,22 @@ public class EventRegistryConfig {
         return handlersRegistry.get(event);
     }
 
+    /**
+     * Method used to clear all event handler in the registry.
+     * Essentially used for testing purposes.
+     */
+    public void clear() {
+        handlersRegistry.clear();
+    }
+
     @SuppressWarnings("unchecked")
-    public <E extends Event> Optional<EventHandler<E>> getByHandlerName(String handlerName) {
-        return Optional.ofNullable((EventHandler<E>) handlersMap.get(handlerName));
+    public <E extends Event> Optional<Handler<E>> getByHandlerName(String handlerName) {
+        return handlersRegistry.values()
+                .stream()
+                .flatMap(List::stream)
+                .filter(handler -> handler.name().equals(handlerName))
+                .map(handler -> (Handler<E>) handler)
+                .findFirst();
     }
 
     @EventListener(ApplicationStartedEvent.class)

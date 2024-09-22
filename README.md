@@ -199,8 +199,6 @@ Keep attention at **#event**, it is declared by default with the first method pa
 *OrderValidatedEvent**) but name will always be **event**. There is no correlation between parameter name and condition
 **#event**.
 
-You can also use **#root** to filter value from **EventWrapper** object.
-
 ## Scheduled tasks
 
 This library internally have two scheduled tasks :

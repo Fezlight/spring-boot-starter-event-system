@@ -2,6 +2,7 @@ package fr.fezlight.eventsystem.config;
 
 import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 import fr.fezlight.eventsystem.models.Event;
+import fr.fezlight.eventsystem.models.Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,7 +28,7 @@ public class EventAutoConfigurationTest {
         var eventRegistry = eventAutoConfiguration.eventRegistryConfig(applicationContext);
 
         assertThat(eventRegistry).isNotNull();
-        assertThat(eventRegistry.getHandlersName(Test1Event.class))
+        assertThat(eventRegistry.getHandlers(Test1Event.class).stream().map(Handler::name))
                 .hasSize(1)
                 .contains("Test1Listeners#handleEvent");
         assertThat(eventRegistry.getByHandlerName("Test1Listeners#handleEvent")).isPresent();
@@ -54,10 +55,10 @@ public class EventAutoConfigurationTest {
         var eventRegistry = eventAutoConfiguration.eventRegistryConfig(applicationContext);
 
         assertThat(eventRegistry).isNotNull();
-        assertThat(eventRegistry.getHandlersName(Test3Event.class))
+        assertThat(eventRegistry.getHandlers(Test3Event.class).stream().map(Handler::name))
                 .hasSize(1)
                 .contains("Test3Listeners#handleEvent");
-        assertThat(eventRegistry.getHandlersName(Test3AltEvent.class))
+        assertThat(eventRegistry.getHandlers(Test3AltEvent.class).stream().map(Handler::name))
                 .hasSize(1)
                 .contains("handleEventCustom");
         assertThat(eventRegistry.getByHandlerName("Test3Listeners#handleEvent")).isPresent();

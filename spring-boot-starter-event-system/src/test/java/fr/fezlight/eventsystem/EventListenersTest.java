@@ -5,6 +5,7 @@ import fr.fezlight.eventsystem.config.EventRegistryConfig;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
 import fr.fezlight.eventsystem.models.EventWrapper;
+import fr.fezlight.eventsystem.models.Handler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,8 +40,17 @@ class EventListenersTest {
     @Test
     void given1EventWith3Handler_whenProcess_Then3HandlerFound() {
         var event = new TestEventListeners("test");
-        when(eventRegistryConfig.getHandlersName(TestEventListeners.class))
-                .thenReturn(List.of("handler1", "handler2", "handler3"));
+        EventHandler<TestEventListeners> eventHandler = mock(EventHandler.class);
+        SubscribeEvent subscribeEvent = mock(SubscribeEvent.class);
+
+        when(eventHandler.getSubscribeEvent()).thenReturn(subscribeEvent);
+        when(subscribeEvent.condition()).thenReturn("");
+        when(eventRegistryConfig.getHandlers(TestEventListeners.class))
+                .thenReturn(List.of(
+                        new Handler<>("handler1", eventHandler),
+                        new Handler<>("handler2", eventHandler),
+                        new Handler<>("handler3", eventHandler)
+                ));
 
         eventListeners.process(event);
 
@@ -50,7 +60,7 @@ class EventListenersTest {
     @Test
     void given1EventWithNoHandler_whenProcess_ThenNoHandlerFoundNoError() {
         var event = new TestEventListeners("test");
-        when(eventRegistryConfig.getHandlersName(TestEventListeners.class))
+        when(eventRegistryConfig.getHandlers(TestEventListeners.class))
                 .thenReturn(List.of());
 
         eventListeners.process(event);
@@ -89,7 +99,7 @@ class EventListenersTest {
             }
         });
         when(eventRegistryConfig.<TestEventListeners>getByHandlerName("test"))
-                .thenReturn(Optional.of(eventHandler));
+                .thenReturn(Optional.of(new Handler<>("test", eventHandler)));
 
         eventListeners.processEvent(null, eventWrapper);
 
