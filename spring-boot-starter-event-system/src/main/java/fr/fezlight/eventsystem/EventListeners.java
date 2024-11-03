@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelParserConfiguration;
@@ -48,14 +46,12 @@ public class EventListeners {
     private final Supplier<String> defaultMainQueueNaming;
     private final ExpressionParser expressionParser;
     private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
-    private final BeanFactory beanFactory;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
-                          Supplier<String> defaultMainQueueNaming, BeanFactory beanFactory) {
+                          Supplier<String> defaultMainQueueNaming) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
-        this.beanFactory = beanFactory;
         this.expressionParser = new SpelExpressionParser(
                 new SpelParserConfiguration(true, true)
         );
@@ -80,7 +76,7 @@ public class EventListeners {
         }
 
         var context = new StandardEvaluationContext();
-        context.setBeanResolver(new BeanFactoryResolver(beanFactory));
+        context.setVariable("event", event);
 
         List<Handler<?>> eventHandlers = eventRegistryConfig.getHandlers(event.getClass()).stream().filter(handler -> {
             var expression = handler.condition();
