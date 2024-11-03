@@ -194,8 +194,8 @@ public class SampleEventListener {
 
 Here the condition will consume event only when **OrderValidatedEvent.id** field equals to 15.
 
-Keep attention at **#event**, it is declared by default with the first method parameter value (here *
-*OrderValidatedEvent**)
+Keep attention at **#event**, it is declared by default with the first method parameter value
+(here **OrderValidatedEvent**).
 but name will always be **event**. There is no correlation between parameter name and condition **#event**.
 
 ## Failed events
