@@ -14,6 +14,7 @@ import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -93,8 +94,9 @@ public class EventAutoConfiguration {
     @Bean
     public EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
                                          ApplicationEventPublisher applicationEventPublisher,
-                                         Supplier<String> defaultMainQueueNaming) {
-        return new EventListeners(eventRegistryConfig, applicationEventPublisher, defaultMainQueueNaming);
+                                         Supplier<String> defaultMainQueueNaming,
+                                         BeanFactory beanFactory) {
+        return new EventListeners(eventRegistryConfig, applicationEventPublisher, defaultMainQueueNaming, beanFactory);
     }
 
     @Bean

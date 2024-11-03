@@ -66,7 +66,6 @@ public class EventQueueConfig {
     @ConditionalOnMissingBean(name = "eventsRetry")
     Declarables eventsRetry() {
         Queue queue = QueueBuilder.durable(eventProperties.getRabbit().getQueue().getRetry().getName())
-                .singleActiveConsumer()
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getMain().getExchange())
                 .ttl((int) eventProperties.getRabbit().getQueue().getRetry().getTimeBetweenRetries().toMillis())
                 .build();

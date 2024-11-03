@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.SpelParserConfiguration;
@@ -46,12 +48,14 @@ public class EventListeners {
     private final Supplier<String> defaultMainQueueNaming;
     private final ExpressionParser expressionParser;
     private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
+    private final BeanFactory beanFactory;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
-                          Supplier<String> defaultMainQueueNaming) {
+                          Supplier<String> defaultMainQueueNaming, BeanFactory beanFactory) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
+        this.beanFactory = beanFactory;
         this.expressionParser = new SpelExpressionParser(
                 new SpelParserConfiguration(true, true)
         );
@@ -71,14 +75,14 @@ public class EventListeners {
     @RabbitHandler
     @Transactional
     public <E extends Event> void process(E event) {
-        log.debug("Consuming event {}", event);
-
-        List<Handler<?>> eventHandlers = eventRegistryConfig.getHandlers(event.getClass());
+        if (log.isDebugEnabled()) {
+            log.debug("Consuming event {}", event);
+        }
 
         var context = new StandardEvaluationContext();
-        context.setVariable("event", event);
+        context.setBeanResolver(new BeanFactoryResolver(beanFactory));
 
-        eventHandlers.stream().filter(handler -> {
+        List<Handler<?>> eventHandlers = eventRegistryConfig.getHandlers(event.getClass()).stream().filter(handler -> {
             var expression = handler.condition();
             if (!hasLength(expression)) {
                 return true;
@@ -90,7 +94,9 @@ public class EventListeners {
             }
 
             return isValid;
-        }).forEach(handler -> applicationEventPublisher.publishEvent(
+        }).toList();
+
+        eventHandlers.forEach(handler -> applicationEventPublisher.publishEvent(
                 EventWrapper.<E>builder()
                         .event(event)
                         .handlerName(handler.name())
@@ -98,7 +104,9 @@ public class EventListeners {
                         .build()
         ));
 
-        log.debug("Propagate event to {}", eventHandlers);
+        if (log.isDebugEnabled()) {
+            log.debug("Propagate event to {}", eventHandlers);
+        }
     }
 
     /**
@@ -142,6 +150,8 @@ public class EventListeners {
      */
     @RabbitHandler(isDefault = true)
     public void errorEvent(Object event) {
-        log.debug("Receiving error event {}", event);
+        if (log.isDebugEnabled()) {
+            log.debug("Receiving error event {}", event);
+        }
     }
 }

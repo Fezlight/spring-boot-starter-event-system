@@ -17,23 +17,22 @@ use `spring-modulith-events` and a database-backed system.
 
 ## Getting Started
 
-The library is published on Maven Central. The current version is `0.2.0`
+The library is published on Maven Central. The current version is `1.0.0`
 
 Maven
 
 ```xml
-
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system:0.2.0'
+    implementation 'fr.fezlight:spring-boot-starter-event-system:1.0.0'
 ```
 
 See [Sonatype Maven Central](https://search.maven.org/artifact/fr.fezlight/spring-boot-starter-event-system) for
@@ -52,14 +51,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:0.2.0'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:1.0.0'
 ```
 
 The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
@@ -75,7 +74,7 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
@@ -195,16 +194,40 @@ public class SampleEventListener {
 
 Here the condition will consume event only when **OrderValidatedEvent.id** field equals to 15.
 
-Keep attention at **#event**, it is declared by default with the first method parameter value (here *
-*OrderValidatedEvent**) but name will always be **event**. There is no correlation between parameter name and condition
-**#event**.
+Keep attention at **#event**, it is declared with the method parameter name (here **event**).
+
+## Failed events
+
+By default, all failed events in terminal state (retry = 0 or errored) are redirected to error queue and not processed
+at all.
+
+If you want to retry these events, you can do the following by calling EventService.
+
+```java
+import fr.fezlight.eventsystem.EventService;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ReprocessEvent {
+    private final EventService eventService;
+    
+    public ReprocessEvent(EventService eventService) {
+        this.eventService = eventService; 
+    }
+    
+    public void reprocessAll() {
+        // By calling this method, Rabbit will consume all failed events and redirect with reply to header
+        eventService.reprocessAllFailedMessage();
+    }
+}
+```
 
 ## Scheduled tasks
 
 This library internally have two scheduled tasks :
 
-- Remove completed tasks configured by `events.scheduled-task.complete-clear`
-- Retry incomplete tasks configured by `events.scheduled-task.incomplete-retry`
+- Remove completed events tasks configured by `events.scheduled-task.complete-clear`
+- Retry incomplete events tasks configured by `events.scheduled-task.incomplete-retry`
 
 These tasks can be enabled by setting `events.scheduled-task.enabled=true`.
 
@@ -226,6 +249,28 @@ Here's the architecture of the event system.
 Here is a more detail overview of the workflow of this library.
 
 [Workflow Diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/Fezlight/spring-boot-starter-event-system/main/resources/workflow.puml)
+
+## Properties
+
+| Properties                                        | Description                                               | Default value                     |
+|---------------------------------------------------|-----------------------------------------------------------|-----------------------------------|
+| events.enabled                                    | Enable event system in your app                           | true                              |
+| events.queue.autoconfigure                        | Enable autoconfiguring of queues                          | true                              |
+| events.queue.main.name                            | Name of the main queue used to consume event              | events.${spring.application.name} |
+| events.queue.main.exchange                        | Name of the exchange related to main queue (Fanout mode)  | events                            |
+| events.queue.main.direct-exchange                 | Name of the exchange related to main queue (Direct mode)  | events.direct                     |
+| events.queue.error.name                           | Name of the error queue used to store error               | events.error                      |
+| events.queue.error.exchange                       | Name of the exchange related to error queue (Direct mode) | events.direct                     |
+| events.queue.retry.name                           | Name of the retry queue used to store retryable error     | events.retry                      |
+| events.queue.retry.exchange                       | Name of the exchange related to retry queue (Direct mode) | events.direct                     |
+| events.queue.retry.time-between-retries           | Duration between each retries                             | 1 minutes                         |
+| events.scheduled-task.enabled                     | Enable schedule task (Clear / Retry incomplete events)    | false                             |
+| events.scheduled-task.complete-clear.enabled      | Enable clear completed events task                        | false                             |
+| events.scheduled-task.complete-clear.cron         | Cron expression to launch clear completed events          | 0 */1 * * * *                     |
+| events.scheduled-task.complete-clear.older-than   | Duration to filter events that will be cleared            | 1 minutes                         |
+| events.scheduled-task.incomplete-retry.enabled    | Enable retry incomplete events task                       | false                             |
+| events.scheduled-task.incomplete-retry.cron       | Cron expression to launch retry incomplete events         | 0 */1 * * * *                     |
+| events.scheduled-task.incomplete-retry.older-than | Duration to filter events that will be retried            | 1 minutes                         |
 
 ## Contributing
 

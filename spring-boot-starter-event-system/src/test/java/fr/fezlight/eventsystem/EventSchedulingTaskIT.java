@@ -67,7 +67,7 @@ public class EventSchedulingTaskIT {
     }
 
     @Test
-    void givenPublishedEventImpletedMoreThan1Minutes_whenRetry_ThenCompleteEvent() {
+    void givenPublishedEventIncompleteMoreThan1Minutes_whenRetry_ThenCompleteEvent() {
         var publications = TargetEventPublication.of(
                 new TestEventSchedulingEvent("test"),
                 PublicationTargetIdentifier.of("org.springframework.modulith.events.support.DelegatingEventExternalizer.externalize(java.lang.Object)"),
