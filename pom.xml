@@ -28,7 +28,7 @@
         <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <sign-maven-plugin.version>1.1.0</sign-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
