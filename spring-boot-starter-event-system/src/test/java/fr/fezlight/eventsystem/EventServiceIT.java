@@ -11,7 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @TestPropertySource(properties = "spring.rabbitmq.listener.simple.auto-startup=false")
@@ -40,12 +43,13 @@ public class EventServiceIT {
                 }
         );
 
-        Integer countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
-        assertThat(countError).isEqualTo(1);
+        await()
+                .atMost(Duration.ofSeconds(1))
+                .until(() -> amqpAdmin.getQueueInfo("events.error").getMessageCount(), i -> i == 1);
 
         eventService.reprocessAllFailedMessage();
 
-        countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
+        int countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
         assertThat(countError).isEqualTo(0);
         Integer count = amqpAdmin.getQueueInfo("events.testevents").getMessageCount();
         assertThat(count).isEqualTo(1);
