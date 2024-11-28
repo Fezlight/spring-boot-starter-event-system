@@ -1,6 +1,7 @@
 package fr.fezlight.eventsystem.models;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jmolecules.event.annotation.DomainEvent;
 import org.springframework.modulith.events.Externalized;
 
 /**
@@ -12,5 +13,6 @@ import org.springframework.modulith.events.Externalized;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 @Externalized
+@DomainEvent
 public interface Event {
 }

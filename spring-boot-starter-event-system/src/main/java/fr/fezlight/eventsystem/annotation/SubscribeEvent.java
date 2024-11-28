@@ -2,6 +2,8 @@ package fr.fezlight.eventsystem.annotation;
 
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
 import fr.fezlight.eventsystem.models.EventWrapper;
+import org.jmolecules.event.annotation.DomainEventHandler;
+import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,6 +20,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@DomainEventHandler
 public @interface SubscribeEvent {
     /**
      * Configure a custom handler name for the annotated method in the event registry
@@ -25,6 +28,7 @@ public @interface SubscribeEvent {
      * @return the custom name in the registry, if any (or empty by default)
      * @see EventRegistryConfig
      */
+    @AliasFor(annotation = DomainEventHandler.class, attribute = "name")
     String customName() default "";
 
     /**
