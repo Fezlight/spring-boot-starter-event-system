@@ -35,11 +35,6 @@ jobs:
           server-username: MAVEN_REPOSITORY_USERNAME
           server-password: MAVEN_REPOSITORY_PASSWORD
 
-      - name: Set up Docker
-        run: |
-          sudo apt update
-          sudo apt install -y docker
-
       - name: Run maven tests
         run: mvn -B verify --file pom.xml
 
