@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-parent</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>spring-boot-starter-event-system-parent</name>
@@ -39,7 +39,7 @@
         <developerConnection>scm:git:git@github.com:Fezlight/spring-boot-starter-event-system-system.git
         </developerConnection>
         <url>https://github.com/Fezlight/spring-boot-starter-event-system</url>
-        <tag>v1.2.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
