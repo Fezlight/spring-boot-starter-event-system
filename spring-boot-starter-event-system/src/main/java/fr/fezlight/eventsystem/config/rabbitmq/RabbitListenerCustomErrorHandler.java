@@ -39,7 +39,7 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
         int retryLeft = Objects.requireNonNullElse(retryLeftHeader, eventWrapper.getRetryLeft());
 
         if (retryLeft > 0) {
-            log.debug("Retry left = {}", retryLeft);
+            log.debug("Retry attempts left = {}", retryLeft);
             rabbitTemplate.convertAndSend(
                     eventProperties.getRabbit().getQueue().getRetry().getExchange(),
                     eventProperties.getRabbit().getQueue().getRetry().getName(),
