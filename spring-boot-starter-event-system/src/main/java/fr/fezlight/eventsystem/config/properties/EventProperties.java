@@ -48,7 +48,8 @@ public class EventProperties {
         }
 
         public static class Queue {
-            private MainQueueConfig main = new MainQueueConfig("events", "events", "events.direct");
+            private MainQueueConfig main = new MainQueueConfig("", "events", "events.direct");
+            private QueueConfig worker = new QueueConfig("", "events.direct");
             private QueueConfig error = new QueueConfig("events.error", "events.direct");
             private RetryQueueConfig retry = new RetryQueueConfig("events.retry", "events.direct", Duration.ofMinutes(1));
             private boolean autoconfigure = true;
@@ -61,6 +62,10 @@ public class EventProperties {
                 return this.error;
             }
 
+            public QueueConfig getWorker() {
+                return worker;
+            }
+
             public RetryQueueConfig getRetry() {
                 return this.retry;
             }
@@ -71,6 +76,10 @@ public class EventProperties {
 
             public void setMain(MainQueueConfig main) {
                 this.main = main;
+            }
+
+            public void setWorker(QueueConfig worker) {
+                this.worker = worker;
             }
 
             public void setError(QueueConfig error) {

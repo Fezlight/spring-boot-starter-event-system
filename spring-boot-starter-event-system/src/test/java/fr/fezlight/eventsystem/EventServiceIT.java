@@ -38,7 +38,7 @@ public class EventServiceIT {
                         .retryLeft(0)
                         .build(),
                 message -> {
-                    message.getMessageProperties().setReplyTo("events.testevents");
+                    message.getMessageProperties().setReplyTo("events.testevents.worker");
                     return message;
                 }
         );
@@ -51,7 +51,7 @@ public class EventServiceIT {
 
         int countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
         assertThat(countError).isEqualTo(0);
-        Integer count = amqpAdmin.getQueueInfo("events.testevents").getMessageCount();
+        Integer count = amqpAdmin.getQueueInfo("events.testevents.worker").getMessageCount();
         assertThat(count).isEqualTo(1);
     }
 

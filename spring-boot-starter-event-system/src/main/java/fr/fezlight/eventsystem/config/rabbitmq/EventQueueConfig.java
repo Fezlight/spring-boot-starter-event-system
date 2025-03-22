@@ -21,16 +21,21 @@ public class EventQueueConfig {
 
     private final EventProperties eventProperties;
     private final Supplier<String> defaultMainQueueNaming;
+    private final Supplier<String> defaultWorkerQueueNaming;
 
-    public EventQueueConfig(EventProperties eventProperties, Supplier<String> defaultMainQueueNaming) {
+    public EventQueueConfig(EventProperties eventProperties,
+                            Supplier<String> defaultMainQueueNaming,
+                            Supplier<String> defaultWorkerQueueNaming) {
         this.eventProperties = eventProperties;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
+        this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
     }
 
-    @Bean("eventsMain")
+    @Bean
     @ConditionalOnMissingBean(name = "eventsMain")
     Declarables eventsMain() {
         Queue queue = QueueBuilder.durable(defaultMainQueueNaming.get())
+                .singleActiveConsumer()
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
                 .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
                 .build();
@@ -44,6 +49,23 @@ public class EventQueueConfig {
                 fanoutExchange,
                 BindingBuilder.bind(queue).to(directExchange).withQueueName(),
                 BindingBuilder.bind(queue).to(fanoutExchange)
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "eventsWorker")
+    Declarables eventsWorker() {
+        Queue queue = QueueBuilder.durable(defaultWorkerQueueNaming.get())
+                .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
+                .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
+                .build();
+        DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange())
+                .build();
+
+        return new Declarables(
+                queue,
+                directExchange,
+                BindingBuilder.bind(queue).to(directExchange).withQueueName()
         );
     }
 

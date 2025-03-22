@@ -37,21 +37,22 @@ import static org.springframework.util.StringUtils.hasLength;
  *
  * @author FezLight
  */
-@RabbitListener(queues = "#{@defaultMainQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
 public class EventListeners {
     private static final Logger log = LoggerFactory.getLogger(EventListeners.class);
 
     private final EventRegistryConfig eventRegistryConfig;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final Supplier<String> defaultMainQueueNaming;
+    private final Supplier<String> defaultWorkerQueueNaming;
     private final ExpressionParser expressionParser;
     private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
-                          Supplier<String> defaultMainQueueNaming) {
+                          Supplier<String> defaultMainQueueNaming, Supplier<String> defaultWorkerQueueNaming) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
+        this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
         this.expressionParser = new SpelExpressionParser(
                 new SpelParserConfiguration(true, true)
         );
@@ -68,8 +69,8 @@ public class EventListeners {
      * @param <E>   Type of Event.
      * @param event Event received from {@link ApplicationEventPublisher}.
      */
-    @RabbitHandler
     @Transactional
+    @RabbitListener(queues = "#{@defaultMainQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
     public <E extends Event> void process(E event) {
         if (log.isDebugEnabled()) {
             log.debug("Consuming event {}", event);
@@ -109,17 +110,17 @@ public class EventListeners {
      * Method used to process an {@link EventWrapper} received by {@link EventListeners#process(Event)}.
      *
      * <p>Call the Event Handler if found by its name {@link EventWrapper#getHandlerName()}
-     * <p>This method will also check if the replyTo headers received from RabbitMQ is matching to the current main
+     * <p>This method will also check if the replyTo headers received from RabbitMQ is matching to the current worker
      * event queue name. If not, the event is ignored.
      *
      * @param <E>     Type of Event.
      * @param replyTo RabbitMQ Header "reply_to".
      * @param event   Event received from {@link ApplicationEventPublisher}.
      */
-    @RabbitHandler
+    @RabbitListener(queues = "#{@defaultWorkerQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
     public <E extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
                                                EventWrapper<E> event) {
-        if (replyTo != null && !Objects.equals(replyTo, defaultMainQueueNaming.get())) {
+        if (replyTo != null && !Objects.equals(replyTo, defaultWorkerQueueNaming.get())) {
             log.debug("No consuming for this message '{}' related to other queue {}", event.getEvent().getClass().getName(), replyTo);
             return;
         }
