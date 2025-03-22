@@ -6,7 +6,6 @@ import fr.fezlight.eventsystem.models.EventWrapper;
 import fr.fezlight.eventsystem.models.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,16 +41,14 @@ public class EventListeners {
 
     private final EventRegistryConfig eventRegistryConfig;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final Supplier<String> defaultMainQueueNaming;
     private final Supplier<String> defaultWorkerQueueNaming;
     private final ExpressionParser expressionParser;
     private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
-                          Supplier<String> defaultMainQueueNaming, Supplier<String> defaultWorkerQueueNaming) {
+                          Supplier<String> defaultWorkerQueueNaming) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.defaultMainQueueNaming = defaultMainQueueNaming;
         this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
         this.expressionParser = new SpelExpressionParser(
                 new SpelParserConfiguration(true, true)
@@ -138,17 +135,5 @@ public class EventListeners {
 
             handler.handle(event.getEvent());
         }, () -> log.error("No handler found for name '{}'", event.getHandlerName()));
-    }
-
-    /**
-     * Method used to ignore Event not compatible with Event System.
-     *
-     * @param event Unknown object.
-     */
-    @RabbitHandler(isDefault = true)
-    public void errorEvent(Object event) {
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving error event {}", event);
-        }
     }
 }

@@ -262,7 +262,8 @@ Here is a more detail overview of the workflow of this library.
 | events.queue.main.exchange                        | Name of the exchange related to main queue (Fanout mode)   | events                                   |
 | events.queue.main.direct-exchange                 | Name of the exchange related to main queue (Direct mode)   | events.direct                            |
 | events.queue.worker.name                          | Name of the worker queue used to process event             | events.${spring.application.name}.worker |
-| events.queue.worker.exchange                      | Name of the exchange related to worker queue (Direct mode) | events.direct                            |
+| events.queue.worker.exchange                      | Name of the exchange related to worker queue (Fanout mode) | events.retry                             |
+| events.queue.worker.direct-exchange               | Name of the exchange related to worker queue (Direct mode) | events.direct                            |
 | events.queue.error.name                           | Name of the error queue used to store error                | events.error                             |
 | events.queue.error.exchange                       | Name of the exchange related to error queue (Direct mode)  | events.direct                            |
 | events.queue.retry.name                           | Name of the retry queue used to store retryable error      | events.retry                             |

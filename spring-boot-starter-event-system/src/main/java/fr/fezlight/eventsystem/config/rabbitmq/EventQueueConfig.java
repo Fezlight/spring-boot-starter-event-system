@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 )
 public class EventQueueConfig {
     public static final String AMQP_RETRY_LEFT_HEADER = "retry_left";
+    public static final String AMQP_REASON_HEADER = "reason";
 
     private final EventProperties eventProperties;
     private final Supplier<String> defaultMainQueueNaming;
@@ -59,13 +60,16 @@ public class EventQueueConfig {
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
                 .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
                 .build();
-        DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange())
+        DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getWorker().getDirectExchange())
                 .build();
+        FanoutExchange fanoutExchange = new FanoutExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange());
 
         return new Declarables(
                 queue,
                 directExchange,
-                BindingBuilder.bind(queue).to(directExchange).withQueueName()
+                fanoutExchange,
+                BindingBuilder.bind(queue).to(directExchange).withQueueName(),
+                BindingBuilder.bind(queue).to(fanoutExchange)
         );
     }
 
@@ -88,7 +92,7 @@ public class EventQueueConfig {
     @ConditionalOnMissingBean(name = "eventsRetry")
     Declarables eventsRetry() {
         Queue queue = QueueBuilder.durable(eventProperties.getRabbit().getQueue().getRetry().getName())
-                .deadLetterExchange(eventProperties.getRabbit().getQueue().getMain().getExchange())
+                .deadLetterExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange())
                 .ttl((int) eventProperties.getRabbit().getQueue().getRetry().getTimeBetweenRetries().toMillis())
                 .build();
         DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getRetry().getExchange())

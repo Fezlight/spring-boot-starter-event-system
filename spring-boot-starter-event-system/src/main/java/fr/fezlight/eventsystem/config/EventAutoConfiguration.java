@@ -93,11 +93,9 @@ public class EventAutoConfiguration {
     @Bean
     public EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
                                          ApplicationEventPublisher applicationEventPublisher,
-                                         Supplier<String> defaultMainQueueNaming,
                                          Supplier<String> defaultWorkerQueueNaming) {
         return new EventListeners(
-                eventRegistryConfig, applicationEventPublisher,
-                defaultMainQueueNaming, defaultWorkerQueueNaming
+                eventRegistryConfig, applicationEventPublisher, defaultWorkerQueueNaming
         );
     }
 

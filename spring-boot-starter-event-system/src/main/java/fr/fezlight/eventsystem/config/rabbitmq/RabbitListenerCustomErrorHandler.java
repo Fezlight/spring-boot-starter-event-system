@@ -3,6 +3,7 @@ package fr.fezlight.eventsystem.config.rabbitmq;
 import com.rabbitmq.client.Channel;
 import fr.fezlight.eventsystem.config.properties.EventProperties;
 import fr.fezlight.eventsystem.models.EventWrapper;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -14,6 +15,7 @@ import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 
 import java.util.Objects;
 
+import static fr.fezlight.eventsystem.config.rabbitmq.EventQueueConfig.AMQP_REASON_HEADER;
 import static fr.fezlight.eventsystem.config.rabbitmq.EventQueueConfig.AMQP_RETRY_LEFT_HEADER;
 
 public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHandler {
@@ -44,6 +46,7 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
                     eventWrapper,
                     m -> MessageBuilder.fromMessage(amqpMessage)
                             .setHeader(AMQP_RETRY_LEFT_HEADER, retryLeft - 1)
+                            .setHeader(AMQP_REASON_HEADER, ExceptionUtils.getStackTrace(exception))
                             .setReplyTo(amqpMessage.getMessageProperties().getConsumerQueue())
                             .build()
             );
