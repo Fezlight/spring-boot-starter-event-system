@@ -254,25 +254,28 @@ Here is a more detail overview of the workflow of this library.
 
 ## Properties
 
-| Properties                                        | Description                                               | Default value                     |
-|---------------------------------------------------|-----------------------------------------------------------|-----------------------------------|
-| events.enabled                                    | Enable event system in your app                           | true                              |
-| events.queue.autoconfigure                        | Enable autoconfiguring of queues                          | true                              |
-| events.queue.main.name                            | Name of the main queue used to consume event              | events.${spring.application.name} |
-| events.queue.main.exchange                        | Name of the exchange related to main queue (Fanout mode)  | events                            |
-| events.queue.main.direct-exchange                 | Name of the exchange related to main queue (Direct mode)  | events.direct                     |
-| events.queue.error.name                           | Name of the error queue used to store error               | events.error                      |
-| events.queue.error.exchange                       | Name of the exchange related to error queue (Direct mode) | events.direct                     |
-| events.queue.retry.name                           | Name of the retry queue used to store retryable error     | events.retry                      |
-| events.queue.retry.exchange                       | Name of the exchange related to retry queue (Direct mode) | events.direct                     |
-| events.queue.retry.time-between-retries           | Duration between each retries                             | 1 minutes                         |
-| events.scheduled-task.enabled                     | Enable schedule task (Clear / Retry incomplete events)    | false                             |
-| events.scheduled-task.complete-clear.enabled      | Enable clear completed events task                        | false                             |
-| events.scheduled-task.complete-clear.cron         | Cron expression to launch clear completed events          | 0 */1 * * * *                     |
-| events.scheduled-task.complete-clear.older-than   | Duration to filter events that will be cleared            | 1 minutes                         |
-| events.scheduled-task.incomplete-retry.enabled    | Enable retry incomplete events task                       | false                             |
-| events.scheduled-task.incomplete-retry.cron       | Cron expression to launch retry incomplete events         | 0 */1 * * * *                     |
-| events.scheduled-task.incomplete-retry.older-than | Duration to filter events that will be retried            | 1 minutes                         |
+| Properties                                        | Description                                                | Default value                            |
+|---------------------------------------------------|------------------------------------------------------------|------------------------------------------|
+| events.enabled                                    | Enable event system in your app                            | true                                     |
+| events.queue.autoconfigure                        | Enable autoconfiguring of queues                           | true                                     |
+| events.queue.main.name                            | Name of the main queue used to consume event               | events.${spring.application.name}.main   |
+| events.queue.main.exchange                        | Name of the exchange related to main queue (Fanout mode)   | events                                   |
+| events.queue.main.direct-exchange                 | Name of the exchange related to main queue (Direct mode)   | events.direct                            |
+| events.queue.worker.name                          | Name of the worker queue used to process event             | events.${spring.application.name}.worker |
+| events.queue.worker.exchange                      | Name of the exchange related to worker queue (Fanout mode) | events.retry                             |
+| events.queue.worker.direct-exchange               | Name of the exchange related to worker queue (Direct mode) | events.direct                            |
+| events.queue.error.name                           | Name of the error queue used to store error                | events.error                             |
+| events.queue.error.exchange                       | Name of the exchange related to error queue (Direct mode)  | events.direct                            |
+| events.queue.retry.name                           | Name of the retry queue used to store retryable error      | events.retry                             |
+| events.queue.retry.exchange                       | Name of the exchange related to retry queue (Direct mode)  | events.direct                            |
+| events.queue.retry.time-between-retries           | Duration between each retries                              | 1 minutes                                |
+| events.scheduled-task.enabled                     | Enable schedule task (Clear / Retry incomplete events)     | false                                    |
+| events.scheduled-task.complete-clear.enabled      | Enable clear completed events task                         | false                                    |
+| events.scheduled-task.complete-clear.cron         | Cron expression to launch clear completed events           | 0 */1 * * * *                            |
+| events.scheduled-task.complete-clear.older-than   | Duration to filter events that will be cleared             | 1 minutes                                |
+| events.scheduled-task.incomplete-retry.enabled    | Enable retry incomplete events task                        | false                                    |
+| events.scheduled-task.incomplete-retry.cron       | Cron expression to launch retry incomplete events          | 0 */1 * * * *                            |
+| events.scheduled-task.incomplete-retry.older-than | Duration to filter events that will be retried             | 1 minutes                                |
 
 ## Contributing
 

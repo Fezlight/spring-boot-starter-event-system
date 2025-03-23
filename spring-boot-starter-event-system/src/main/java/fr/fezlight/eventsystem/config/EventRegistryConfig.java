@@ -164,7 +164,7 @@ public class EventRegistryConfig {
 
         handlersRegistry.forEach((key, value) -> {
             log.debug("Event \"{}\"", key.getSimpleName());
-            value.forEach(handlerName -> log.debug("- Handler '{}'", handlerName));
+            value.forEach(handler -> log.debug("- Handler '{}'", handler.name()));
         });
     }
 }

@@ -5,6 +5,7 @@ participant SpringModulith as springModulith
 participant EventSystem as library
 database    Database    as database
 queue       MainExchange     as mainExchange
+queue       WorkerQueue      as workerQueue
 queue       RetryQueue       as retryQueue
 queue       ErrorQueue       as errorQueue
 
@@ -17,25 +18,25 @@ library -> library : Breakdown by subscriber \n@SubscribeEvent into "EventWrappe
 library -> springModulith : Send every "EventWrapper" (ApplicationEventPublisher)
 loop every event
 springModulith -> database : Save "EventWrapper" Object
-springModulith -> mainExchange : Send event (By using @Externalize)
+springModulith -> workerQueue : Send event (By using @Externalize)
 springModulith -> database : Save Event as "completed"
 end
 alt Successfully event listening
-mainExchange -> library : Receive EventWrapper object
+workerQueue -> library : Receive EventWrapper object
 library -> application : Execute method surrounded by @SubscribeEvent
 else Error when listening (retry = 0)
-mainExchange -> library : Receive EventWrapper object
+workerQueue -> library : Receive EventWrapper object
 library -> application : Execute method surrounded by @SubscribeEvent
 application -> library : Check if retry is possible (Here : no)
 library -> errorQueue : Send it to error
 else Error when listening (retry > 0)
     loop n times (n = retry)
-    mainExchange -> library : Receive EventWrapper object
+    workerQueue -> library : Receive EventWrapper object
     library -> application : Execute method surrounded by @SubscribeEvent
     application -> library : Check if retry is possible (Here : yes)
     library -> retryQueue : Send it to retry
     retryQueue -> retryQueue : Wait it for a configured time
-    retryQueue -> mainExchange : Resend to exchange
+    retryQueue -> workerQueue : Resend to worker queue
     end
 end
 

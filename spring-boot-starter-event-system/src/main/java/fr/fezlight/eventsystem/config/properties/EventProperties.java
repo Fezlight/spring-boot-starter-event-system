@@ -48,17 +48,22 @@ public class EventProperties {
         }
 
         public static class Queue {
-            private MainQueueConfig main = new MainQueueConfig("events", "events", "events.direct");
+            private ExtendedQueueConfig main = new ExtendedQueueConfig("", "events", "events.direct");
+            private ExtendedQueueConfig worker = new ExtendedQueueConfig("", "events.retry", "events.direct");
             private QueueConfig error = new QueueConfig("events.error", "events.direct");
             private RetryQueueConfig retry = new RetryQueueConfig("events.retry", "events.direct", Duration.ofMinutes(1));
             private boolean autoconfigure = true;
 
-            public MainQueueConfig getMain() {
+            public ExtendedQueueConfig getMain() {
                 return this.main;
             }
 
             public QueueConfig getError() {
                 return this.error;
+            }
+
+            public ExtendedQueueConfig getWorker() {
+                return worker;
             }
 
             public RetryQueueConfig getRetry() {
@@ -69,8 +74,12 @@ public class EventProperties {
                 return this.autoconfigure;
             }
 
-            public void setMain(MainQueueConfig main) {
+            public void setMain(ExtendedQueueConfig main) {
                 this.main = main;
+            }
+
+            public void setWorker(ExtendedQueueConfig worker) {
+                this.worker = worker;
             }
 
             public void setError(QueueConfig error) {
@@ -111,10 +120,10 @@ public class EventProperties {
                 }
             }
 
-            public static class MainQueueConfig extends QueueConfig {
+            public static class ExtendedQueueConfig extends QueueConfig {
                 private String directExchange;
 
-                public MainQueueConfig(String name, String exchange, String directExchange) {
+                public ExtendedQueueConfig(String name, String exchange, String directExchange) {
                     super(name, exchange);
                     this.directExchange = directExchange;
                 }

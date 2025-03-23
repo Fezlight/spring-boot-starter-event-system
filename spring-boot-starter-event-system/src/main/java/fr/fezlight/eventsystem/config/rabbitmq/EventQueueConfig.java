@@ -18,25 +18,51 @@ import java.util.function.Supplier;
 )
 public class EventQueueConfig {
     public static final String AMQP_RETRY_LEFT_HEADER = "retry_left";
+    public static final String AMQP_REASON_HEADER = "reason";
 
     private final EventProperties eventProperties;
     private final Supplier<String> defaultMainQueueNaming;
+    private final Supplier<String> defaultWorkerQueueNaming;
 
-    public EventQueueConfig(EventProperties eventProperties, Supplier<String> defaultMainQueueNaming) {
+    public EventQueueConfig(EventProperties eventProperties,
+                            Supplier<String> defaultMainQueueNaming,
+                            Supplier<String> defaultWorkerQueueNaming) {
         this.eventProperties = eventProperties;
         this.defaultMainQueueNaming = defaultMainQueueNaming;
+        this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
     }
 
-    @Bean("eventsMain")
+    @Bean
     @ConditionalOnMissingBean(name = "eventsMain")
     Declarables eventsMain() {
         Queue queue = QueueBuilder.durable(defaultMainQueueNaming.get())
+                .singleActiveConsumer()
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
                 .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
                 .build();
         DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getMain().getDirectExchange())
                 .build();
         FanoutExchange fanoutExchange = new FanoutExchange(eventProperties.getRabbit().getQueue().getMain().getExchange());
+
+        return new Declarables(
+                queue,
+                directExchange,
+                fanoutExchange,
+                BindingBuilder.bind(queue).to(directExchange).withQueueName(),
+                BindingBuilder.bind(queue).to(fanoutExchange)
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "eventsWorker")
+    Declarables eventsWorker() {
+        Queue queue = QueueBuilder.durable(defaultWorkerQueueNaming.get())
+                .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
+                .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
+                .build();
+        DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getWorker().getDirectExchange())
+                .build();
+        FanoutExchange fanoutExchange = new FanoutExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange());
 
         return new Declarables(
                 queue,
@@ -66,7 +92,7 @@ public class EventQueueConfig {
     @ConditionalOnMissingBean(name = "eventsRetry")
     Declarables eventsRetry() {
         Queue queue = QueueBuilder.durable(eventProperties.getRabbit().getQueue().getRetry().getName())
-                .deadLetterExchange(eventProperties.getRabbit().getQueue().getMain().getExchange())
+                .deadLetterExchange(eventProperties.getRabbit().getQueue().getWorker().getExchange())
                 .ttl((int) eventProperties.getRabbit().getQueue().getRetry().getTimeBetweenRetries().toMillis())
                 .build();
         DirectExchange directExchange = ExchangeBuilder.directExchange(eventProperties.getRabbit().getQueue().getRetry().getExchange())

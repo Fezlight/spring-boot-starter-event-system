@@ -93,8 +93,10 @@ public class EventAutoConfiguration {
     @Bean
     public EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
                                          ApplicationEventPublisher applicationEventPublisher,
-                                         Supplier<String> defaultMainQueueNaming) {
-        return new EventListeners(eventRegistryConfig, applicationEventPublisher, defaultMainQueueNaming);
+                                         Supplier<String> defaultWorkerQueueNaming) {
+        return new EventListeners(
+                eventRegistryConfig, applicationEventPublisher, defaultWorkerQueueNaming
+        );
     }
 
     @Bean
@@ -110,7 +112,7 @@ public class EventAutoConfiguration {
         return jacksonMessageConverter;
     }
 
-    @Bean(name = "retryIncompleteEventsCron")
+    @Bean
     public String retryIncompleteEventsCron(EventProperties eventProperties) {
         if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getIncompleteRetry().isEnabled()) {
             return eventProperties.getScheduledTask().getIncompleteRetry().getCron();
@@ -119,7 +121,7 @@ public class EventAutoConfiguration {
         return CRON_DISABLED;
     }
 
-    @Bean(name = "clearCompletedEventCron")
+    @Bean
     public String clearCompletedEventCron(EventProperties eventProperties) {
         if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getCompleteClear().isEnabled()) {
             return eventProperties.getScheduledTask().getCompleteClear().getCron();
@@ -128,25 +130,36 @@ public class EventAutoConfiguration {
         return CRON_DISABLED;
     }
 
-    @Bean(name = "defaultMainQueueNaming")
+    @Bean
     @ConditionalOnMissingBean(name = "defaultMainQueueNaming")
     Supplier<String> defaultMainQueueNaming(@Value("${spring.application.name}") String applicationName,
                                             @Value("${events.rabbit.queue.main.name:}") String alternateMainQueueName) {
         if (!isEmpty(alternateMainQueueName)) {
             return () -> alternateMainQueueName;
         }
-        return () -> "events." + applicationName.toLowerCase();
+        return () -> "events." + applicationName.toLowerCase() + ".main";
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "defaultWorkerQueueNaming")
+    Supplier<String> defaultWorkerQueueNaming(@Value("${spring.application.name}") String applicationName,
+                                              @Value("${events.rabbit.queue.worker.name:}") String alternateWorkerQueueName) {
+        if (!isEmpty(alternateWorkerQueueName)) {
+            return () -> alternateWorkerQueueName;
+        }
+        return () -> "events." + applicationName.toLowerCase() + ".worker";
     }
 
     @Bean
     EventExternalizationConfiguration eventExternalizationConfiguration(
             @Qualifier("defaultMainQueueNaming") Supplier<String> defaultMainQueueNaming,
+            @Qualifier("defaultWorkerQueueNaming") Supplier<String> defaultWorkerQueueNaming,
             @Value("${events.rabbit.queue.main.direct-exchange:events.direct}") String directExchange,
             @Value("${events.rabbit.queue.main.exchange:events}") String exchange
     ) {
         return EventExternalizationConfiguration.externalizing()
                 .select(EventExternalizationConfiguration.annotatedAsExternalized())
-                .route(EventWrapper.class, it -> RoutingTarget.forTarget(directExchange).andKey(defaultMainQueueNaming.get()))
+                .route(EventWrapper.class, it -> RoutingTarget.forTarget(directExchange).andKey(defaultWorkerQueueNaming.get()))
                 .route(Event.class, it -> RoutingTarget.forTarget(exchange).andKey(defaultMainQueueNaming.get()))
                 .build();
     }
