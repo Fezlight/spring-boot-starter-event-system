@@ -11,7 +11,7 @@ env:
   SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASS }}
   MAVEN_SERVERS: |
     [{
-      "id": "central",
+      "id": "sonatype-central",
       "username": "${env.MAVEN_REPOSITORY_USERNAME}",
       "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
     }]

@@ -8,7 +8,7 @@ env:
   MAVEN_REPOSITORY_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
   MAVEN_SERVERS: |
     [{
-      "id": "central",
+      "id": "sonatype-central",
       "username": "${env.MAVEN_REPOSITORY_USERNAME}",
       "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
     }]  
