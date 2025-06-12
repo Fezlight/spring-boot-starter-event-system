@@ -8,12 +8,7 @@ env:
   MAVEN_REPOSITORY_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
   MAVEN_SERVERS: |
     [{
-      "id": "sonatype-nexus-snapshots",
-      "username": "${env.MAVEN_REPOSITORY_USERNAME}",
-      "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
-    },
-    {
-      "id": "sonatype-nexus-staging",
+      "id": "central",
       "username": "${env.MAVEN_REPOSITORY_USERNAME}",
       "password": "${env.MAVEN_REPOSITORY_PASSWORD}"
     }]  
@@ -31,7 +26,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          server-id: sonatype-nexus-snapshots
+          server-id: central
           server-username: MAVEN_REPOSITORY_USERNAME
           server-password: MAVEN_REPOSITORY_PASSWORD
 
