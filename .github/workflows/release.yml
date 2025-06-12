@@ -50,7 +50,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          server-id: central
+          server-id: sonatype-central
           server-username: MAVEN_REPOSITORY_USERNAME
           server-password: MAVEN_REPOSITORY_PASSWORD
       - name: Release version
