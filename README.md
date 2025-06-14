@@ -41,7 +41,7 @@ versions.
 The library provides autoconfigured support for creating a basic implementation of an event handling system based on
 the `events.enabled` property, which is true by default.
 
-By design the event system requires a database to work. You have 2 starters available for that.
+By design, the event system requires a database to work. You have two starters available for that.
 
 ### Jdbc
 
@@ -62,7 +62,7 @@ Gradle
 ```
 
 The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
-publications .
+publications.
 
 See : https://docs.spring.io/spring-modulith/reference/appendix.html#schemas
 
@@ -148,14 +148,14 @@ public class OrderService {
 ```
 
 By default, `spring-modulith` register a `ApplicationEventPublisher` bean with a TransactionalEventPublisher
-implementation and places event publishing after the transaction completes to guarantee good consistency between your
+implementation and place event publishing after the transaction completes to guarantee good consistency between your
 application and event system.
 
 ### Retry an event
 
 By default, an annotated method will not automatically retry an event.
 
-If you want to change this behavior you can use the `retry` parameter within `@SubscribeEvent`.
+If you want to change this behavior, you can use the `retry` parameter within `@SubscribeEvent`.
 
 ```java
 import org.springframework.stereotype.Component;
@@ -175,7 +175,7 @@ public class SampleEventListener {
 
 By default, all method subscribing to an event type will consume event.
 
-If you want to change this behavior you can use the `condition` parameter within `@SubscribeEvent`.
+If you want to change this behavior, you can use the `condition` parameter within `@SubscribeEvent`.
 The syntax is a spring SpEL expression.
 
 ```java
@@ -195,8 +195,8 @@ public class SampleEventListener {
 Here the condition will consume event only when **OrderValidatedEvent.id** field equals to 15.
 
 Keep attention at **#event**, it is declared by default with the first method parameter value
-(here **OrderValidatedEvent**).
-but name will always be **event**. There is no correlation between parameter name and condition **#event**.
+(here **OrderValidatedEvent**), but name will always be **event**. There is no correlation between parameter name and
+condition **#event**.
 
 ## Failed events
 
@@ -226,7 +226,7 @@ public class ReprocessEvent {
 
 ## Scheduled tasks
 
-This library internally have two scheduled tasks :
+This library internally has two scheduled tasks :
 
 - Remove completed events tasks configured by `events.scheduled-task.complete-clear`
 - Retry incomplete events tasks configured by `events.scheduled-task.incomplete-retry`
@@ -248,7 +248,7 @@ Here's the architecture of the event system.
 
 ![](./resources/architecture.drawio.png)
 
-Here is a more detail overview of the workflow of this library.
+Here is a more detail overview of the workflow.
 
 [Workflow Diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/Fezlight/spring-boot-starter-event-system/main/resources/workflow.puml)
 
