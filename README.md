@@ -35,7 +35,7 @@ Gradle
     implementation 'fr.fezlight:spring-boot-starter-event-system:1.3.0'
 ```
 
-See [Sonatype Maven Central](https://search.maven.org/artifact/fr.fezlight/spring-boot-starter-event-system) for
+See [Sonatype Maven Central](https://central.sonatype.com/artifact/fr.fezlight/spring-boot-starter-event-system) for
 versions.
 
 The library provides autoconfigured support for creating a basic implementation of an event handling system based on
