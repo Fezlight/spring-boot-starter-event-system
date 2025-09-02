@@ -22,7 +22,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring.boot.version>3.5.0</spring.boot.version>
+        <spring.boot.version>3.5.5</spring.boot.version>
         <spring-modulith.version>1.4.0</spring-modulith.version>
         <shedlock-spring.version>6.9.2</shedlock-spring.version>
         <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
