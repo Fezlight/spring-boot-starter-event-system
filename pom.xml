@@ -23,7 +23,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <spring.boot.version>3.5.6</spring.boot.version>
-        <spring-modulith.version>1.4.3</spring-modulith.version>
+        <spring-modulith.version>1.4.4</spring-modulith.version>
         <shedlock-spring.version>6.10.0</shedlock-spring.version>
         <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
