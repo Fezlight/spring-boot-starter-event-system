@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-parent</artifactId>
@@ -125,6 +126,25 @@
         </dependencies>
     </dependencyManagement>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-scm-plugin</artifactId>
+                            <configuration>
+                                <message>[maven-scm-plugin] Bump README to new release version</message>
+                                <includes>README.md</includes>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -223,6 +243,9 @@
                     <scmReleaseCommitComment>[skip ci] &#x1f516; Release @{releaseLabel}</scmReleaseCommitComment>
                     <scmDevelopmentCommitComment>[skip ci] &#x1f6a7; New Development version
                     </scmDevelopmentCommitComment>
+                    <dryRun>true</dryRun>
+                    <preparationGoals>-Prelease clean scm:checkin verify</preparationGoals>
+                    <completionGoals>-Prelease clean scm:checkin verify</completionGoals>
                 </configuration>
             </plugin>
             <plugin>
