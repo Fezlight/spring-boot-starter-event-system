@@ -1,7 +1,7 @@
 # Spring Boot Library implementation of Event System
 
 [![codecov](https://codecov.io/github/Fezlight/spring-boot-starter-event-system/graph/badge.svg?token=dF6tkf1ypO)](https://codecov.io/github/Fezlight/spring-boot-starter-event-system)
-[![Maven Central](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system/badge.svg?version=1.3.1)](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system?version=1.3.1)
+[![Maven Central](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system/badge.svg?version=1.3.3-SNAPSHOT)](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system?version=1.3.3-SNAPSHOT)
 
 ## Main Purpose
 
@@ -17,7 +17,7 @@ use `spring-modulith-events` and a database-backed system.
 
 ## Getting Started
 
-The library is published on Maven Central. The current version is `1.3.2`
+The library is published on Maven Central. The current version is `1.3.3-SNAPSHOT`
 
 Maven
 
@@ -25,14 +25,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3-SNAPSHOT</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system:1.3.2'
+    implementation 'fr.fezlight:spring-boot-starter-event-system:1.3.3-SNAPSHOT'
 ```
 
 See [Sonatype Maven Central](https://central.sonatype.com/artifact/fr.fezlight/spring-boot-starter-event-system) for
@@ -51,14 +51,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3-SNAPSHOT</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:1.3.2'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:1.3.3-SNAPSHOT'
 ```
 
 The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
@@ -74,14 +74,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3-SNAPSHOT</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:1.3.2'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:1.3.3-SNAPSHOT'
 ```
 
 ## Usage
