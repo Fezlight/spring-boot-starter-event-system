@@ -243,9 +243,7 @@
                     <scmReleaseCommitComment>[skip ci] &#x1f516; Release @{releaseLabel}</scmReleaseCommitComment>
                     <scmDevelopmentCommitComment>[skip ci] &#x1f6a7; New Development version
                     </scmDevelopmentCommitComment>
-                    <dryRun>true</dryRun>
-                    <preparationGoals>-Prelease clean scm:checkin verify</preparationGoals>
-                    <completionGoals>-Prelease clean scm:checkin verify</completionGoals>
+                    <preparationGoals>-Prelease clean compile scm:checkin verify</preparationGoals>
                 </configuration>
             </plugin>
             <plugin>

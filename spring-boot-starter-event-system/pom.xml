@@ -81,6 +81,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>release</id>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
