@@ -71,7 +71,7 @@ public class EventListenersIT {
 
         var event = new TestEventListener("testName");
 
-        scenario.stimulate(() -> eventListeners.process(event));
+        eventListeners.process(event);
 
         assertThat(bool.get()).isEqualTo(false);
 
@@ -119,8 +119,8 @@ public class EventListenersIT {
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
-        Integer countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
-        assertThat(countError).isEqualTo(1);
+        Long countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
+        assertThat(countError).isEqualTo(1L);
 
         eventRegistryConfig.unregisterHandler(TestEventListener.class, handler.name());
     }
@@ -142,10 +142,10 @@ public class EventListenersIT {
                     assertThat(e.getEvent()).isEqualTo(event);
                 });
 
-        Integer countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
-        assertThat(countError).isEqualTo(0);
-        Integer countRetry = amqpAdmin.getQueueInfo("events.retry").getMessageCount();
-        assertThat(countRetry).isEqualTo(1);
+        Long countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
+        assertThat(countError).isEqualTo(0L);
+        Long countRetry = amqpAdmin.getQueueInfo("events.retry").getMessageCount();
+        assertThat(countRetry).isEqualTo(1L);
 
         eventRegistryConfig.unregisterHandler(TestEventListener.class, ev.name());
     }

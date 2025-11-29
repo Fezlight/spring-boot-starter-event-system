@@ -49,10 +49,10 @@ public class EventServiceIT {
 
         eventService.reprocessAllFailedMessage();
 
-        int countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
-        assertThat(countError).isEqualTo(0);
-        Integer count = amqpAdmin.getQueueInfo("events.testevents.worker").getMessageCount();
-        assertThat(count).isEqualTo(1);
+        Long countError = amqpAdmin.getQueueInfo("events.error").getMessageCount();
+        assertThat(countError).isEqualTo(0L);
+        Long count = amqpAdmin.getQueueInfo("events.testevents.worker").getMessageCount();
+        assertThat(count).isEqualTo(1L);
     }
 
     public record TestEventService(String eventName) implements Event {

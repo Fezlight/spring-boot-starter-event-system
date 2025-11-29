@@ -2,29 +2,27 @@ package fr.fezlight.eventsystem.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.modulith.events.Externalized;
 
 import java.util.Objects;
 import java.util.StringJoiner;
 
 @Externalized
-public class EventWrapper<T> {
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+public class EventWrapper<T extends Event> {
     private final T event;
     private final String handlerName;
     private Integer retryLeft;
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public EventWrapper(@JsonProperty("event") T event,
-                        @JsonProperty("handlerName") String handlerName,
-                        @JsonProperty("retryLeft") Integer retryLeft) {
+    EventWrapper(@JsonProperty("event") T event,
+                 @JsonProperty("handlerName") String handlerName,
+                 @JsonProperty("retryLeft") Integer retryLeft) {
         this.event = Objects.requireNonNull(event, "event cannot be null");
         this.handlerName = Objects.requireNonNull(handlerName, "handlerName cannot be null");
         this.retryLeft = retryLeft;
     }
 
-    public static <T> EventWrapperBuilder<T> builder() {
+    public static <T extends Event> EventWrapperBuilder<T> builder() {
         return new EventWrapperBuilder<>();
     }
 
@@ -53,7 +51,7 @@ public class EventWrapper<T> {
         this.retryLeft = retryLeft;
     }
 
-    public static class EventWrapperBuilder<T> {
+    public static class EventWrapperBuilder<T extends Event> {
         private T event;
         private String handlerName;
         private Integer retryLeft;
@@ -61,7 +59,6 @@ public class EventWrapper<T> {
         EventWrapperBuilder() {
         }
 
-        @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
         public EventWrapperBuilder<T> event(T event) {
             this.event = event;
             return this;

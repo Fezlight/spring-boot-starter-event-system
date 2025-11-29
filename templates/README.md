@@ -12,7 +12,8 @@ use `spring-modulith-events` and a database-backed system.
 ## Requirements
 
 - Java 17+
-- Spring Boot 3+
+- Spring 7+
+- Spring Boot 4+
 - RabbitMQ
 
 ## Getting Started
@@ -206,7 +207,7 @@ at all.
 If you want to retry these events, you can do the following by calling EventService.
 
 ```java
-import ${project.groupId}.eventsystem.EventService;
+import fr.fezlight.eventsystem.EventService;
 import org.springframework.stereotype.Component;
 
 @Component

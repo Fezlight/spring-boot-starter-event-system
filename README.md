@@ -12,7 +12,8 @@ use `spring-modulith-events` and a database-backed system.
 ## Requirements
 
 - Java 17+
-- Spring Boot 3+
+- Spring 7+
+- Spring Boot 4+
 - RabbitMQ
 
 ## Getting Started

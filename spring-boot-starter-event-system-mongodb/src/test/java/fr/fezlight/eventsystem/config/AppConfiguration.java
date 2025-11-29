@@ -4,10 +4,11 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.mongodb.MongoDBContainer;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
+import tools.jackson.databind.json.JsonMapper;
 
 @Testcontainers
 @SpringBootConfiguration(proxyBeanMethods = false)
@@ -24,5 +25,12 @@ public class AppConfiguration {
     @ServiceConnection
     public MongoDBContainer mongoDBContainer() {
         return new MongoDBContainer(DockerImageName.parse("mongo:latest"));
+    }
+
+    @Bean
+    public JsonMapper jsonMapper() {
+        return JsonMapper.builder()
+                .findAndAddModules()
+                .build();
     }
 }
