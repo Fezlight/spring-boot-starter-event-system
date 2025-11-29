@@ -9,6 +9,10 @@ This library is dedicated to Spring Boot applications. Once it is included and e
 will create all resources to handle event listening using RabbitMQ in your application. To avoid losing messages we
 use `spring-modulith-events` and a database-backed system.
 
+## Migration from 1.x
+
+See [Migration from 1.x](./documentation/MIGRATION_GUIDE_v2.0.md)
+
 ## Requirements
 
 - Java 17+
