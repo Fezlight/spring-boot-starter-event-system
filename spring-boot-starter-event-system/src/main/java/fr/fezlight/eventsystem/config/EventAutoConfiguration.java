@@ -1,6 +1,5 @@
 package fr.fezlight.eventsystem.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.fezlight.eventsystem.EventListeners;
 import fr.fezlight.eventsystem.EventService;
 import fr.fezlight.eventsystem.annotation.SubscribeEvent;
@@ -10,9 +9,8 @@ import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
 import fr.fezlight.eventsystem.models.EventWrapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.amqp.support.converter.JacksonJavaTypeMapper;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +25,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.modulith.events.EventExternalizationConfiguration;
 import org.springframework.modulith.events.RoutingTarget;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,9 +105,9 @@ public class EventAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MessageConverter producerJackson2MessageConverter(ObjectMapper objectMapper) {
-        var jacksonMessageConverter = new Jackson2JsonMessageConverter(objectMapper);
-        jacksonMessageConverter.setTypePrecedence(Jackson2JavaTypeMapper.TypePrecedence.TYPE_ID);
+    public JacksonJsonMessageConverter producerJacksonJsonMessageConverter(JsonMapper jsonMapper) {
+        var jacksonMessageConverter = new JacksonJsonMessageConverter(jsonMapper);
+        jacksonMessageConverter.setTypePrecedence(JacksonJavaTypeMapper.TypePrecedence.TYPE_ID);
         return jacksonMessageConverter;
     }
 

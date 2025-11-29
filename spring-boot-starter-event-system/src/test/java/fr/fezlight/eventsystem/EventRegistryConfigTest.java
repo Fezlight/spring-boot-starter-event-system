@@ -21,7 +21,7 @@ public class EventRegistryConfigTest {
     @InjectMocks
     private EventRegistryConfig eventRegistryConfig;
 
-    private SubscribeEvent subscribeEvent = new SubscribeEvent() {
+    private final SubscribeEvent subscribeEvent = new SubscribeEvent() {
 
         @Override
         public Class<? extends Annotation> annotationType() {
