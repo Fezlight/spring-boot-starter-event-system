@@ -25,7 +25,7 @@
         <spring.boot.version>4.0.0</spring.boot.version>
         <spring-modulith.version>2.0.0</spring-modulith.version>
         <shedlock-spring.version>7.2.0</shedlock-spring.version>
-        <maven-release-plugin.version>3.2.0</maven-release-plugin.version>
+        <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <sign-maven-plugin.version>1.1.0</sign-maven-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
