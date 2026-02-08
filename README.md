@@ -1,7 +1,7 @@
 # Spring Boot Library implementation of Event System
 
 [![codecov](https://codecov.io/github/Fezlight/spring-boot-starter-event-system/graph/badge.svg?token=dF6tkf1ypO)](https://codecov.io/github/Fezlight/spring-boot-starter-event-system)
-[![Maven Central](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system/badge.svg?version=2.0.1)](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system?version=2.0.1)
+[![Maven Central](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system/badge.svg?version=2.0.2)](https://maven-badges.sml.io/sonatype-central/fr.fezlight/spring-boot-starter-event-system?version=2.0.2)
 
 ## Main Purpose
 
@@ -22,7 +22,7 @@ See [Migration from 1.x](./documentation/MIGRATION_GUIDE_v2.0.md)
 
 ## Getting Started
 
-The library is published on Maven Central. The current version is `2.0.1`
+The library is published on Maven Central. The current version is `2.0.2`
 
 Maven
 
@@ -30,14 +30,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system:2.0.1'
+    implementation 'fr.fezlight:spring-boot-starter-event-system:2.0.2'
 ```
 
 See [Sonatype Maven Central](https://central.sonatype.com/artifact/fr.fezlight/spring-boot-starter-event-system) for
@@ -56,14 +56,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:2.0.1'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-jdbc:2.0.2'
 ```
 
 The Jdbc implementation of Spring-Modulith beside need a table named **event_publications** to save all events
@@ -79,14 +79,14 @@ Maven
 <dependency>
     <groupId>fr.fezlight</groupId>
     <artifactId>spring-boot-starter-event-system-mongodb</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 </dependency>
 ```
 
 Gradle
 
 ```groovy
-    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:2.0.1'
+    implementation 'fr.fezlight:spring-boot-starter-event-system-mongodb:2.0.2'
 ```
 
 ## Usage
