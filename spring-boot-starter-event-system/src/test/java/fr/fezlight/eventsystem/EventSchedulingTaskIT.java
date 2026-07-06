@@ -70,19 +70,19 @@ public class EventSchedulingTaskIT {
     void givenPublishedEventIncompleteMoreThan1Minutes_whenRetry_ThenCompleteEvent() {
         var publications = TargetEventPublication.of(
                 new TestEventSchedulingEvent("test"),
-                PublicationTargetIdentifier.of("org.springframework.modulith.events.support.DelegatingEventExternalizer.externalize(java.lang.Object)"),
+                PublicationTargetIdentifier.of("org.springframework.modulith.events.support.EventExternalizerModuleListener.externalize(java.lang.Object)"),
                 ZonedDateTime.now().minusMinutes(2).toInstant()
         );
         eventPublicationRepository.create(publications);
 
-        var completedEventPublications = eventPublicationRepository.findIncompletePublications();
-        assertThat(completedEventPublications).hasSize(1);
+        var incompleteEventPublications = eventPublicationRepository.findIncompletePublications();
+        assertThat(incompleteEventPublications).hasSize(1);
 
         eventSchedulingTaskConfig.retryIncompleteEvents();
 
         await().atMost(Duration.ofMillis(200)).until(() -> !eventPublicationRepository.findCompletedPublications().isEmpty());
 
-        completedEventPublications = eventPublicationRepository.findCompletedPublications();
+        var completedEventPublications = eventPublicationRepository.findCompletedPublications();
         assertThat(completedEventPublications).hasSize(1);
 
         // Cleanup

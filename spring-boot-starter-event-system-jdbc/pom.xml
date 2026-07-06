@@ -9,13 +9,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spring-boot-starter-event-system-jdbc</artifactId>
-    <version>2.0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/Fezlight/spring-boot-starter-event-system</url>
 
     <name>spring-boot-starter-event-system-jdbc</name>
     <description>
-        This module is the JDBC implementation for event system based on Spring Modulith Jdbc.
+        This module is the JDBC implementation for an event system based on Spring Modulith Jdbc.
     </description>
 
     <properties>

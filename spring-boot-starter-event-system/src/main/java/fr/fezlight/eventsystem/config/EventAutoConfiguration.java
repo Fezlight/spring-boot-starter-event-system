@@ -14,7 +14,9 @@ import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.amqp.autoconfigure.RabbitTemplateCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,14 +44,14 @@ import static org.springframework.util.ObjectUtils.isEmpty;
         havingValue = "true",
         matchIfMissing = true
 )
-@AutoConfiguration
+@AutoConfiguration(afterName = "org.springframework.modulith.events.amqp.RabbitJacksonConfiguration")
 @EnableConfigurationProperties(EventProperties.class)
 @Import(EventQueueConfig.class)
 public class EventAutoConfiguration {
 
     @Bean
     @SuppressWarnings("unchecked")
-    public EventRegistryConfig eventRegistryConfig(ApplicationContext applicationContext) {
+    EventRegistryConfig eventRegistryConfig(ApplicationContext applicationContext) {
         var registry = new EventRegistryConfig();
         Collection<Object> beans = applicationContext.getBeansWithAnnotation(Component.class).values();
 
@@ -90,7 +92,7 @@ public class EventAutoConfiguration {
     }
 
     @Bean
-    public EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
+    EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
                                          ApplicationEventPublisher applicationEventPublisher,
                                          Supplier<String> defaultWorkerQueueNaming) {
         return new EventListeners(
@@ -99,20 +101,28 @@ public class EventAutoConfiguration {
     }
 
     @Bean
-    public EventService eventService(RabbitTemplate rabbitTemplate, EventProperties eventProperties) {
+    EventService eventService(RabbitTemplate rabbitTemplate, EventProperties eventProperties) {
         return new EventService(rabbitTemplate, eventProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public JacksonJsonMessageConverter producerJacksonJsonMessageConverter(JsonMapper jsonMapper) {
-        var jacksonMessageConverter = new JacksonJsonMessageConverter(jsonMapper);
+    @ConditionalOnBean(JsonMapper.class)
+    JacksonJsonMessageConverter producerJacksonJsonMessageConverter(JsonMapper jsonMapper) {
+        var jacksonMessageConverter = new JacksonJsonMessageConverter(jsonMapper, "fr.fezlight.eventsystem.models");
         jacksonMessageConverter.setTypePrecedence(JacksonJavaTypeMapper.TypePrecedence.TYPE_ID);
         return jacksonMessageConverter;
     }
 
     @Bean
-    public String retryIncompleteEventsCron(EventProperties eventProperties) {
+    @ConditionalOnBean(JsonMapper.class)
+    RabbitTemplateCustomizer eventRabbitTemplateCustomizer(JsonMapper mapper) {
+        var jacksonMessageConverter = producerJacksonJsonMessageConverter(mapper);
+        return template -> template.setMessageConverter(jacksonMessageConverter);
+    }
+
+    @Bean
+    String retryIncompleteEventsCron(EventProperties eventProperties) {
         if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getIncompleteRetry().isEnabled()) {
             return eventProperties.getScheduledTask().getIncompleteRetry().getCron();
         }
@@ -121,7 +131,7 @@ public class EventAutoConfiguration {
     }
 
     @Bean
-    public String clearCompletedEventCron(EventProperties eventProperties) {
+    String clearCompletedEventCron(EventProperties eventProperties) {
         if (eventProperties.getScheduledTask().isEnabled() && eventProperties.getScheduledTask().getCompleteClear().isEnabled()) {
             return eventProperties.getScheduledTask().getCompleteClear().getCron();
         }

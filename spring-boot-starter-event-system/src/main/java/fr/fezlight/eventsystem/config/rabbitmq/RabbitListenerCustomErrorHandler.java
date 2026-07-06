@@ -4,14 +4,15 @@ import com.rabbitmq.client.Channel;
 import fr.fezlight.eventsystem.config.properties.EventProperties;
 import fr.fezlight.eventsystem.models.EventWrapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.listener.ListenerExecutionFailedException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.api.RabbitListenerErrorHandler;
-import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 
 import java.util.Objects;
 
@@ -30,7 +31,10 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
     }
 
     @Override
-    public Object handleError(Message amqpMessage, Channel channel, org.springframework.messaging.Message<?> message, ListenerExecutionFailedException exception) {
+    public Object handleError(@NonNull Message amqpMessage,
+                              Channel channel,
+                              org.springframework.messaging.Message<?> message,
+                              @NonNull ListenerExecutionFailedException exception) {
         if (message == null || !(message.getPayload() instanceof EventWrapper<?> eventWrapper)) {
             throw new AmqpRejectAndDontRequeueException("Unable to handle message", exception.getCause());
         }
@@ -47,7 +51,7 @@ public class RabbitListenerCustomErrorHandler implements RabbitListenerErrorHand
                     m -> MessageBuilder.fromMessage(amqpMessage)
                             .setHeader(AMQP_RETRY_LEFT_HEADER, retryLeft - 1)
                             .setHeader(AMQP_REASON_HEADER, ExceptionUtils.getStackTrace(exception))
-                            .setReplyTo(amqpMessage.getMessageProperties().getConsumerQueue())
+                            .setReplyTo(Objects.requireNonNull(amqpMessage.getMessageProperties().getConsumerQueue()))
                             .build()
             );
         } else {
