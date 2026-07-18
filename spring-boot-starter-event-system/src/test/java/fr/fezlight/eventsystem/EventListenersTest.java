@@ -2,6 +2,7 @@ package fr.fezlight.eventsystem;
 
 import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
+import fr.fezlight.eventsystem.config.rabbitmq.QueueNameResolver;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
 import fr.fezlight.eventsystem.models.EventWrapper;
@@ -16,7 +17,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,9 +35,10 @@ class EventListenersTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
-    private Supplier<String> defaultMainQueueNaming;
+    private QueueNameResolver queueNameResolver;
 
     @Test
+    @SuppressWarnings("unchecked")
     void given1EventWith3Handler_whenProcess_Then3HandlerFound() {
         var event = new TestEventListeners("test");
         EventHandler<TestEventListeners> eventHandler = mock(EventHandler.class);
@@ -69,6 +70,7 @@ class EventListenersTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void given1EventNoReplyTo_whenProcessEvent_ThenHandlerFoundAndHandle() {
         var event = new TestEventListeners("test");
         var eventWrapper = EventWrapper.<TestEventListeners>builder()
@@ -131,7 +133,7 @@ class EventListenersTest {
                 .handlerName("test")
                 .build();
 
-        when(defaultMainQueueNaming.get()).thenReturn("events.testevents");
+        when(queueNameResolver.getWorkerQueueName()).thenReturn("events.testevents");
 
         eventListeners.processEvent("another_queue", eventWrapper);
 
@@ -146,7 +148,7 @@ class EventListenersTest {
                 .handlerName("test")
                 .build();
 
-        when(defaultMainQueueNaming.get()).thenReturn("events.testevents");
+        when(queueNameResolver.getWorkerQueueName()).thenReturn("events.testevents");
         when(eventRegistryConfig.getByHandlerName(anyString()))
                 .thenReturn(Optional.empty());
 

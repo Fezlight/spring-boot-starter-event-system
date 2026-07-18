@@ -9,8 +9,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
-import java.util.function.Supplier;
-
 @ConditionalOnProperty(
         value = "events.rabbit.queue.autoconfigure",
         havingValue = "true",
@@ -21,21 +19,17 @@ public class EventQueueConfig {
     public static final String AMQP_REASON_HEADER = "reason";
 
     private final EventProperties eventProperties;
-    private final Supplier<String> defaultMainQueueNaming;
-    private final Supplier<String> defaultWorkerQueueNaming;
+    private final QueueNameResolver queueNameResolver;
 
-    public EventQueueConfig(EventProperties eventProperties,
-                            Supplier<String> defaultMainQueueNaming,
-                            Supplier<String> defaultWorkerQueueNaming) {
+    public EventQueueConfig(EventProperties eventProperties, QueueNameResolver queueNameResolver) {
         this.eventProperties = eventProperties;
-        this.defaultMainQueueNaming = defaultMainQueueNaming;
-        this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
+        this.queueNameResolver = queueNameResolver;
     }
 
     @Bean
     @ConditionalOnMissingBean(name = "eventsMain")
     Declarables eventsMain() {
-        Queue queue = QueueBuilder.durable(defaultMainQueueNaming.get())
+        Queue queue = QueueBuilder.durable(queueNameResolver.getMainQueueName())
                 .singleActiveConsumer()
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
                 .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
@@ -56,7 +50,7 @@ public class EventQueueConfig {
     @Bean
     @ConditionalOnMissingBean(name = "eventsWorker")
     Declarables eventsWorker() {
-        Queue queue = QueueBuilder.durable(defaultWorkerQueueNaming.get())
+        Queue queue = QueueBuilder.durable(queueNameResolver.getWorkerQueueName())
                 .deadLetterExchange(eventProperties.getRabbit().getQueue().getError().getExchange())
                 .deadLetterRoutingKey(eventProperties.getRabbit().getQueue().getError().getName())
                 .build();

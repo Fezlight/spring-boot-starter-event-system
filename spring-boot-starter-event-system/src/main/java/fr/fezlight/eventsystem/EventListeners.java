@@ -1,6 +1,7 @@
 package fr.fezlight.eventsystem;
 
 import fr.fezlight.eventsystem.config.EventRegistryConfig;
+import fr.fezlight.eventsystem.config.rabbitmq.QueueNameResolver;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventWrapper;
 import fr.fezlight.eventsystem.models.Handler;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 import static org.springframework.util.StringUtils.hasLength;
 
@@ -41,21 +41,20 @@ public class EventListeners {
 
     private final EventRegistryConfig eventRegistryConfig;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final Supplier<String> defaultWorkerQueueNaming;
+    private final QueueNameResolver queueNameResolver;
     private final ExpressionParser expressionParser;
     private final BiFunction<String, EvaluationContext, Boolean> conditionEvaluation;
 
     public EventListeners(EventRegistryConfig eventRegistryConfig, ApplicationEventPublisher applicationEventPublisher,
-                          Supplier<String> defaultWorkerQueueNaming) {
+                          QueueNameResolver queueNameResolver) {
         this.eventRegistryConfig = eventRegistryConfig;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.defaultWorkerQueueNaming = defaultWorkerQueueNaming;
+        this.queueNameResolver = queueNameResolver;
         this.expressionParser = new SpelExpressionParser(
                 new SpelParserConfiguration(true, true)
         );
-        this.conditionEvaluation = (expression, context) -> {
-            return Boolean.TRUE.equals(expressionParser.parseExpression(expression).getValue(context, Boolean.class));
-        };
+        this.conditionEvaluation = (expression, context) ->
+                Boolean.TRUE.equals(expressionParser.parseExpression(expression).getValue(context, Boolean.class));
     }
 
     /**
@@ -67,7 +66,7 @@ public class EventListeners {
      * @param event Event received from {@link ApplicationEventPublisher}.
      */
     @Transactional
-    @RabbitListener(queues = "#{@defaultMainQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
+    @RabbitListener(queues = "#{@queueNameResolver.mainQueueName}", errorHandler = "rabbitListenerCustomErrorHandler")
     public <E extends Event> void process(E event) {
         if (log.isDebugEnabled()) {
             log.debug("Consuming event {}", event);
@@ -114,10 +113,10 @@ public class EventListeners {
      * @param replyTo RabbitMQ Header "reply_to".
      * @param event   Event received from {@link ApplicationEventPublisher}.
      */
-    @RabbitListener(queues = "#{@defaultWorkerQueueNaming.get()}", errorHandler = "rabbitListenerCustomErrorHandler")
+    @RabbitListener(queues = "#{@queueNameResolver.workerQueueName}", errorHandler = "rabbitListenerCustomErrorHandler")
     public <E extends Event> void processEvent(@Header(value = AmqpHeaders.REPLY_TO, required = false) String replyTo,
                                                EventWrapper<E> event) {
-        if (replyTo != null && !Objects.equals(replyTo, defaultWorkerQueueNaming.get())) {
+        if (replyTo != null && !Objects.equals(replyTo, queueNameResolver.getWorkerQueueName())) {
             log.debug("No consuming for this message '{}' related to other queue {}", event.getEvent().getClass().getName(), replyTo);
             return;
         }
