@@ -24,14 +24,16 @@ public class QueueNameResolver {
     }
 
     public String getMainQueueName() {
-        return Optional.ofNullable(mainQueueName.getIfAvailable())
-                .or(() -> Optional.ofNullable(mainQueueNameLegacy.getIfAvailable()).map(Supplier::get))
+        return Optional.ofNullable(mainQueueNameLegacy.getIfAvailable())
+                .map(Supplier::get)
+                .or(() -> Optional.ofNullable(mainQueueName.getIfAvailable()))
                 .orElseThrow(() -> new IllegalStateException("No main queue naming bean available"));
     }
 
     public String getWorkerQueueName() {
-        return Optional.ofNullable(workerQueueName.getIfAvailable())
-                .or(() -> Optional.ofNullable(workerQueueNameLegacy.getIfAvailable()).map(Supplier::get))
+        return Optional.ofNullable(workerQueueNameLegacy.getIfAvailable())
+                .map(Supplier::get)
+                .or(() -> Optional.ofNullable(workerQueueName.getIfAvailable()))
                 .orElseThrow(() -> new IllegalStateException("No worker queue naming bean available"));
     }
 }
