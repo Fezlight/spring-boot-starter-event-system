@@ -5,6 +5,7 @@ import fr.fezlight.eventsystem.EventService;
 import fr.fezlight.eventsystem.annotation.SubscribeEvent;
 import fr.fezlight.eventsystem.config.properties.EventProperties;
 import fr.fezlight.eventsystem.config.rabbitmq.EventQueueConfig;
+import fr.fezlight.eventsystem.config.rabbitmq.QueueNameResolver;
 import fr.fezlight.eventsystem.models.Event;
 import fr.fezlight.eventsystem.models.EventHandler;
 import fr.fezlight.eventsystem.models.EventWrapper;
@@ -12,6 +13,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJavaTypeMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.amqp.autoconfigure.RabbitTemplateCustomizer;
@@ -92,11 +94,23 @@ public class EventAutoConfiguration {
     }
 
     @Bean
+    QueueNameResolver queueNameResolver(
+            @Qualifier("defaultMainQueueName") ObjectProvider<String> mainQueueName,
+            @Qualifier("defaultMainQueueNaming") ObjectProvider<Supplier<String>> mainQueueNameLegacy,
+            @Qualifier("defaultWorkerQueueName") ObjectProvider<String> workerQueueName,
+            @Qualifier("defaultWorkerQueueNaming") ObjectProvider<Supplier<String>> workerQueueNameLegacy
+    ) {
+        return new QueueNameResolver(
+                mainQueueName, mainQueueNameLegacy, workerQueueName, workerQueueNameLegacy
+        );
+    }
+
+    @Bean
     EventListeners eventListeners(EventRegistryConfig eventRegistryConfig,
-                                         ApplicationEventPublisher applicationEventPublisher,
-                                         Supplier<String> defaultWorkerQueueNaming) {
+                                  ApplicationEventPublisher applicationEventPublisher,
+                                  QueueNameResolver queueNameResolver) {
         return new EventListeners(
-                eventRegistryConfig, applicationEventPublisher, defaultWorkerQueueNaming
+                eventRegistryConfig, applicationEventPublisher, queueNameResolver
         );
     }
 
@@ -140,36 +154,55 @@ public class EventAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "defaultMainQueueNaming")
-    Supplier<String> defaultMainQueueNaming(@Value("${spring.application.name}") String applicationName,
-                                            @Value("${events.rabbit.queue.main.name:}") String alternateMainQueueName) {
+    @ConditionalOnMissingBean(name = "defaultMainQueueName")
+    String defaultMainQueueName(@Value("${spring.application.name}") String applicationName,
+                                @Value("${events.rabbit.queue.main.name:}") String alternateMainQueueName) {
         if (!isEmpty(alternateMainQueueName)) {
-            return () -> alternateMainQueueName;
+            return alternateMainQueueName;
         }
-        return () -> "events." + applicationName.toLowerCase() + ".main";
+        return "events." + applicationName.toLowerCase() + ".main";
+    }
+
+    /**
+     * @deprecated In favor of {@link defaultMainQueueName(String, String)}
+     */
+    @Bean
+    @Deprecated(forRemoval = true, since = "2.1.1")
+    @ConditionalOnMissingBean(name = "defaultMainQueueNaming")
+    Supplier<String> defaultMainQueueNaming(@Qualifier("defaultMainQueueName") String mainQueueName) {
+        return () -> mainQueueName;
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "defaultWorkerQueueNaming")
-    Supplier<String> defaultWorkerQueueNaming(@Value("${spring.application.name}") String applicationName,
-                                              @Value("${events.rabbit.queue.worker.name:}") String alternateWorkerQueueName) {
+    @ConditionalOnMissingBean(name = "defaultWorkerQueueName")
+    String defaultWorkerQueueName(@Value("${spring.application.name}") String applicationName,
+                                  @Value("${events.rabbit.queue.worker.name:}") String alternateWorkerQueueName) {
         if (!isEmpty(alternateWorkerQueueName)) {
-            return () -> alternateWorkerQueueName;
+            return alternateWorkerQueueName;
         }
-        return () -> "events." + applicationName.toLowerCase() + ".worker";
+        return "events." + applicationName.toLowerCase() + ".worker";
+    }
+
+    /**
+     * @deprecated In favor of {@link defaultWorkerQueueName(String, String)}
+     */
+    @Bean
+    @Deprecated(forRemoval = true, since = "2.1.1")
+    @ConditionalOnMissingBean(name = "defaultWorkerQueueNaming")
+    Supplier<String> defaultWorkerQueueNaming(@Qualifier("defaultWorkerQueueName") String workerQueueName) {
+        return () -> workerQueueName;
     }
 
     @Bean
     EventExternalizationConfiguration eventExternalizationConfiguration(
-            @Qualifier("defaultMainQueueNaming") Supplier<String> defaultMainQueueNaming,
-            @Qualifier("defaultWorkerQueueNaming") Supplier<String> defaultWorkerQueueNaming,
+            QueueNameResolver queueNameResolver,
             @Value("${events.rabbit.queue.main.direct-exchange:events.direct}") String directExchange,
             @Value("${events.rabbit.queue.main.exchange:events}") String exchange
     ) {
         return EventExternalizationConfiguration.externalizing()
                 .select(EventExternalizationConfiguration.annotatedAsExternalized())
-                .route(EventWrapper.class, it -> RoutingTarget.forTarget(directExchange).andKey(defaultWorkerQueueNaming.get()))
-                .route(Event.class, it -> RoutingTarget.forTarget(exchange).andKey(defaultMainQueueNaming.get()))
+                .route(EventWrapper.class, it -> RoutingTarget.forTarget(directExchange).andKey(queueNameResolver.getWorkerQueueName()))
+                .route(Event.class, it -> RoutingTarget.forTarget(exchange).andKey(queueNameResolver.getMainQueueName()))
                 .build();
     }
 }
