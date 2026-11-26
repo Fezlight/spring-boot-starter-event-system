@@ -6,10 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.modulith.events.IncompleteEventPublications;
+import org.springframework.modulith.events.FailedEventPublications;
+import org.springframework.modulith.events.ResubmissionOptions;
 import org.springframework.modulith.events.core.EventPublicationRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.time.Duration;
 
 @EnableScheduling
 @Configuration
@@ -18,14 +21,14 @@ public class EventSchedulingTaskConfig {
     private static final Logger log = LoggerFactory.getLogger(EventSchedulingTaskConfig.class);
 
     private final EventPublicationRegistry eventPublicationRegistry;
-    private final IncompleteEventPublications incompleteEventPublications;
+    private final FailedEventPublications failedEventPublications;
     private final EventProperties eventProperties;
 
     public EventSchedulingTaskConfig(EventPublicationRegistry eventPublicationRegistry,
-                                     IncompleteEventPublications incompleteEventPublications,
+                                     FailedEventPublications failedEventPublications,
                                      EventProperties eventProperties) {
         this.eventPublicationRegistry = eventPublicationRegistry;
-        this.incompleteEventPublications = incompleteEventPublications;
+        this.failedEventPublications = failedEventPublications;
         this.eventProperties = eventProperties;
     }
 
@@ -40,6 +43,9 @@ public class EventSchedulingTaskConfig {
     @SchedulerLock(name = "EventPublicationsConfig#retryIncompleteEvents")
     public void retryIncompleteEvents() {
         log.debug("Retry incomplete events ...");
-        incompleteEventPublications.resubmitIncompletePublicationsOlderThan(eventProperties.getScheduledTask().getIncompleteRetry().getOlderThan());
+
+        Duration retryOlderThan = eventProperties.getScheduledTask().getIncompleteRetry().getOlderThan();
+        failedEventPublications
+                .resubmit(ResubmissionOptions.defaults().withMinAge(retryOlderThan));
     }
 }
