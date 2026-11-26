@@ -51,7 +51,10 @@ public class EventListeners {
         this.applicationEventPublisher = applicationEventPublisher;
         this.queueNameResolver = queueNameResolver;
         this.expressionParser = new SpelExpressionParser(
-                new SpelParserConfiguration(true, true)
+                SpelParserConfiguration.builder()
+                        .autoGrowCollections()
+                        .autoGrowNullReferences()
+                        .build()
         );
         this.conditionEvaluation = (expression, context) ->
                 Boolean.TRUE.equals(expressionParser.parseExpression(expression).getValue(context, Boolean.class));

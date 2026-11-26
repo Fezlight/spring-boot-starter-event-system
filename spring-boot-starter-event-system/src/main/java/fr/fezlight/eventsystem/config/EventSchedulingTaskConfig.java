@@ -11,6 +11,16 @@ import org.springframework.modulith.events.core.EventPublicationRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
+
+/**
+ * @see <a href="https://docs.spring.io/spring-modulith/reference/appendix.html">Spring Modulith Appendix</a>
+ * @deprecated You can now choos how to deal with event after failed or incomplete.
+ * <p>
+ * clearCompletedEvent replacement => spring.modulith.events.completion-mode
+ * retryIncompleteEvents replacement => spring.modulith.events.staleness.*
+ */
+@Deprecated(since = "2.2.0", forRemoval = true)
 @EnableScheduling
 @Configuration
 @ConditionalOnProperty(value = "events.scheduled-task.enabled", havingValue = "true", matchIfMissing = true)
@@ -40,6 +50,8 @@ public class EventSchedulingTaskConfig {
     @SchedulerLock(name = "EventPublicationsConfig#retryIncompleteEvents")
     public void retryIncompleteEvents() {
         log.debug("Retry incomplete events ...");
-        incompleteEventPublications.resubmitIncompletePublicationsOlderThan(eventProperties.getScheduledTask().getIncompleteRetry().getOlderThan());
+
+        Duration retryOlderThan = eventProperties.getScheduledTask().getIncompleteRetry().getOlderThan();
+        incompleteEventPublications.resubmitIncompletePublicationsOlderThan(retryOlderThan);
     }
 }

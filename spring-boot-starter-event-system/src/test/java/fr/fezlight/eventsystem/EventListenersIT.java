@@ -43,9 +43,8 @@ public class EventListenersIT {
     @Test
     void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenSingleEvent(Scenario scenario) {
         AtomicBoolean bool = new AtomicBoolean(false);
-        var handler = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-            bool.set(true);
-        }, 0, "#event.name.equals(\"testName\")");
+        var handler = eventRegistryConfig.registerHandler(TestEventListener.class,
+                e -> bool.set(true), 0, "#event.name.equals(\"testName\")");
 
         var event = new TestEventListener("testName");
 
@@ -63,11 +62,10 @@ public class EventListenersIT {
     }
 
     @Test
-    void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenNoHandlerFound(Scenario scenario) {
+    void givenRegisteredHandlerWithCondition_whenPublishEvent_ThenNoHandlerFound() {
         AtomicBoolean bool = new AtomicBoolean(false);
-        var handler = eventRegistryConfig.registerHandler(TestEventListener.class, e -> {
-            bool.set(true);
-        }, 0, "#event.name.equals(\"other\")");
+        var handler = eventRegistryConfig.registerHandler(TestEventListener.class,
+                e -> bool.set(true), 0, "#event.name.equals(\"other\")");
 
         var event = new TestEventListener("testName");
 

@@ -1,5 +1,6 @@
 package fr.fezlight.eventsystem.converters;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
@@ -13,7 +14,7 @@ public class ClassConverters {
     @ReadingConverter
     public static class ClassReadConverter implements Converter<String, Class<?>> {
         @Override
-        public Class<?> convert(String source) {
+        public Class<?> convert(@NonNull String source) {
             try {
                 return Class.forName(source);
             } catch (ClassNotFoundException e) {
