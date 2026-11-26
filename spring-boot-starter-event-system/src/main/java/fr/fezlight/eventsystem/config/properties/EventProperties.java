@@ -159,7 +159,17 @@ public class EventProperties {
     public static class ScheduledTask {
         private boolean enabled = false;
         private boolean lockEnabled = false;
+        /**
+         * @see <a href="https://docs.spring.io/spring-modulith/reference/events.html#publication-registry.lifecycle.staleness">Spring Modulith Staleness</a>
+         * @deprecated In favor of Spring Modulith native feature
+         */
+        @Deprecated(since = "2.2.0", forRemoval = true)
         private Time incompleteRetry = new Time();
+        /**
+         * @see <a href="https://docs.spring.io/spring-modulith/reference/events.html#publication-registry.lifecycle.staleness">Spring Modulith Staleness</a>
+         * @deprecated In favor of Spring Modulith native feature
+         */
+        @Deprecated(since = "2.2.0", forRemoval = true)
         private Time completeClear = new Time();
 
         public boolean isEnabled() {
